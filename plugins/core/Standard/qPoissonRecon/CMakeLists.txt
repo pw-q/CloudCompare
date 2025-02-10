@@ -1,4 +1,4 @@
-option( PLUGIN_STANDARD_QPOISSON_RECON "Install qPoissonRecon plugin" OFF )
+option( PLUGIN_STANDARD_QPOISSON_RECON "Install qPoissonRecon plugin" ON )
 
 if( PLUGIN_STANDARD_QPOISSON_RECON )
 	project( QPOISSON_RECON_PLUGIN )

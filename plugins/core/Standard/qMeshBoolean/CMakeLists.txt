@@ -1,4 +1,4 @@
-option( PLUGIN_STANDARD_QMESH_BOOLEAN "Install qMeshBoolean plugin" OFF )
+option( PLUGIN_STANDARD_QMESH_BOOLEAN "Install qMeshBoolean plugin" ON )
 
 # CloudCompare Mesh CSG operations plugin (based on the libigl library)
 if( PLUGIN_STANDARD_QMESH_BOOLEAN )

@@ -1,4 +1,4 @@
-option( PLUGIN_IO_QADDITIONAL "Install qAdditionalIO plugin" OFF )
+option( PLUGIN_IO_QADDITIONAL "Install qAdditionalIO plugin" ON )
 
 if( PLUGIN_IO_QADDITIONAL )
 	project( QADDITIONAL_IO_PLUGIN )

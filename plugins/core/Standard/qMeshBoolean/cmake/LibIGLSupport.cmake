@@ -3,8 +3,8 @@
 # ------------------------------------------------------------------------------
 
 # libIGL library https://libigl.github.io/
-set( LIBIGL_INCLUDE_DIR "" CACHE PATH "libigl include directory" )
-set( LIBIGL_RELEASE_LIBRARY_FILE "" CACHE FILEPATH "libigl library file (release mode)" )
+set( LIBIGL_INCLUDE_DIR "/usr/local/include/igl" CACHE PATH "libigl include directory" )
+set( LIBIGL_RELEASE_LIBRARY_FILE "/usr/local/lib" CACHE FILEPATH "libigl library file (release mode)" )
 if (WIN32)
 	set( LIBIGL_DEBUG_LIBRARY_FILE "" CACHE FILEPATH "libigl library file (debug mode)" )
 endif()
@@ -16,7 +16,8 @@ else()
 	)
 endif()
 
-set( EIGEN_ROOT_DIR "" CACHE PATH "Eigen root (contains the Eigen directory)" )
+set( EIGEN_ROOT_DIR "/usr" CACHE PATH "Eigen root (contains the Eigen directory)" )
+message("Eigen:" ${EIGEN_ROOT_DIR})
 if ( NOT EIGEN_ROOT_DIR )
 	message( SEND_ERROR "No Eigen root directory specified (EIGEN_ROOT_DIR)" )
 else()

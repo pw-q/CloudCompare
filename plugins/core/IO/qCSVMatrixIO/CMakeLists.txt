@@ -1,4 +1,4 @@
-option( PLUGIN_IO_QCSV_MATRIX "Install qCSVMatrix I/O plugin" OFF )
+option( PLUGIN_IO_QCSV_MATRIX "Install qCSVMatrix I/O plugin" ON )
 
 if( PLUGIN_IO_QCSV_MATRIX )
 	project( QCSV_MATRIX_IO_PLUGIN )

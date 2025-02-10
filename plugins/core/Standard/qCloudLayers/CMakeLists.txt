@@ -1,4 +1,4 @@
-option( PLUGIN_STANDARD_QCLOUDLAYERS "Install qCloudLayers release plugin" OFF )
+option( PLUGIN_STANDARD_QCLOUDLAYERS "Install qCloudLayers release plugin" ON )
 
 if ( PLUGIN_STANDARD_QCLOUDLAYERS )
 	project( QCLOUDLAYERS_PLUGIN )

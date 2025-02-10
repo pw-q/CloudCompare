@@ -354,6 +354,8 @@ ccGLWindowInterface::ccGLWindowInterface(QObject* parent/*=nullptr*/, bool silen
 
 ccGLWindowInterface::~ccGLWindowInterface()
 {
+	doMakeCurrent();
+
 	//we must unlink entities currently linked to this window
 	if (m_globalDBRoot)
 	{
@@ -2941,7 +2943,17 @@ void ccGLWindowInterface::togglePerspective(bool objectCentered)
 
 double ccGLWindowInterface::computeActualPixelSize() const
 {
-	return m_viewportParams.computePixelSize(glWidth()); // we now use the width as the driving dimension for scaling
+	double pixelSize = m_viewportParams.computePixelSize(glWidth()); // we now use the width as the driving dimension for scaling
+
+	// but we have to compensate for the aspect ratio is h > w
+	double ar = static_cast<double>(glHeight()) / glWidth();
+	if (ar > 1.0)
+	{
+		pixelSize *= ar;
+	}
+
+	return pixelSize;
+
 }
 
 void ccGLWindowInterface::setBubbleViewMode(bool state)
@@ -4042,7 +4054,10 @@ GLfloat ccGLWindowInterface::getGLDepth(int x, int y, bool extendToNeighbors/*=f
 				extendToNeighbors = false;
 			}
 		}
-		m_pickingPBO.glBuffer->release();
+		if (m_pickingPBO.glBuffer) // may be null if an error occurred when calling glBuffer->map
+		{
+			m_pickingPBO.glBuffer->release();
+		}
 	}
 	if (m_activeFbo != formerFBO)
 	{

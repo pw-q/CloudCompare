@@ -1,4 +1,4 @@
-option( PLUGIN_STANDARD_QPCV "Install qPCV plugin" OFF )
+option( PLUGIN_STANDARD_QPCV "Install qPCV plugin" ON )
 
 if( PLUGIN_STANDARD_QPCV )
 	project( QPCV_PLUGIN )

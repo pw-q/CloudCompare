@@ -51,7 +51,7 @@ class LasOpenDialog : public QDialog
 	/// Default constructor
 	explicit LasOpenDialog(QWidget* parent = nullptr);
 
-	/// Set some informations about the file
+	/// Sets some pieces of information about the file
 	/// to be displayed to the user.
 	void setInfo(int versionMinor, int pointFormatId, qulonglong numPoints);
 
@@ -67,7 +67,7 @@ class LasOpenDialog : public QDialog
 	                         std::vector<LasExtraScalarField>& extraScalarFields);
 
 	/// Returns the array of extra scalar fields to be used as normals
-	std::array<LasExtraScalarField, 3> getExtraFieldsToBeLoadedAsNormals(const std::vector<LasExtraScalarField>& extraScalarFields) const ;
+	std::array<LasExtraScalarField, 3> getExtraFieldsToBeLoadedAsNormals(const std::vector<LasExtraScalarField>& extraScalarFields) const;
 
 	/// Returns whether the user wants to ignore (not load)
 	/// fields for which values are all default values.
@@ -77,11 +77,9 @@ class LasOpenDialog : public QDialog
 	/// rgb from the file as 8-bit components.
 	bool shouldForce8bitColors() const;
 
-	/// Returns quiet_NaN if the time shift value should be
-	/// automatically found.
-	///
-	/// Otherwise, returns the value manually specified by the user.
-	double timeShiftValue() const;
+	/// Returns whether the user wants to decompose the classification field
+	/// according to what the LAS standard says.
+	bool shouldDecomposeClassification() const;
 
 	/// Returns the action the user wants to do.
 	///
@@ -106,13 +104,6 @@ class LasOpenDialog : public QDialog
 	void doSelectAll(bool doSelect);
 	void doSelectAllESF(bool doSelect);
 
-	/// Connected to the "automatic time shift" check box.
-	///
-	/// Depending on if the user checks or un-checks the automatic time shift,
-	/// we need to enable / disable the double spin box that
-	/// is used to get the manually entered time shift.
-	void onAutomaticTimeShiftToggle(bool checked);
-
 	void onApplyAll();
 
 	void onNormalComboBoxChanged(const QString& name);
@@ -120,6 +111,11 @@ class LasOpenDialog : public QDialog
 	void onBrowseTilingOutputDir();
 
 	void onCurrentTabChanged(int index);
+
+	void decomposeClassificationFields(bool decompose, bool autoUpdateCheckSate);
+
+	/// Hides or un-hides the checkboxes that corresponds to the flag fields
+	void onDecomposeClassificationToggled(bool state);
 
   private:
 	bool m_shouldSkipDialog{false};

@@ -28,6 +28,11 @@
 
 //Qt
 #include <QFileInfo>
+#include <QDialog>
+#include <QPushButton>
+
+//Dialog
+#include <ui_PCDOutputFormatDlg.h>
 
 //Boost
 #include <boost/bind.hpp>
@@ -35,6 +40,7 @@
 
 //System
 #include <iostream>
+#include <fstream>
 
 //pcl
 #include <pcl/filters/passthrough.h>
@@ -66,10 +72,100 @@ bool PcdFilter::canSave(CC_CLASS_ENUM type, bool& multiple, bool& exclusive) con
 	return false;
 }
 
+static PcdFilter::PCDOutputFileFormat s_outputFileFormat = PcdFilter::AUTO;
+void PcdFilter::SetOutputFileFormat(PCDOutputFileFormat format)
+{
+	s_outputFileFormat = format;
+}
+
+//! Dialog for the PCV plugin
+class ccPCDFileOutputForamtDialog : public QDialog, public Ui::PCDOutputFormatDialog
+{
+public:
+	explicit ccPCDFileOutputForamtDialog(QWidget* parent = nullptr)
+		: QDialog(parent, Qt::Tool)
+		, Ui::PCDOutputFormatDialog()
+	{
+		setupUi(this);
+	}
+};
+
 CC_FILE_ERROR PcdFilter::saveToFile(ccHObject* entity, const QString& filename, const SaveParameters& parameters)
 {
 	if (!entity || filename.isEmpty())
+	{
 		return CC_FERR_BAD_ARGUMENT;
+	}
+
+	PcdFilter::PCDOutputFileFormat outputFileFormat = s_outputFileFormat;
+	if (outputFileFormat == AUTO)
+	{
+		if (nullptr == parameters.parentWidget)
+		{
+			// defaulting to compressed binary
+			outputFileFormat = COMPRESSED_BINARY;
+		}
+		else
+		{
+			// GUI version: show a dialog to let the user choose the output format
+			ccPCDFileOutputForamtDialog dialog;
+			static PcdFilter::PCDOutputFileFormat s_previousOutputFileFormat = COMPRESSED_BINARY;
+			switch (s_previousOutputFileFormat)
+			{
+			case COMPRESSED_BINARY:
+				dialog.compressedBinaryRadioButton->setChecked(true);
+				break;
+			case BINARY:
+				dialog.binaryRadioButton->setChecked(true);
+				break;
+			case ASCII:
+				dialog.asciiRadioButton->setChecked(true);
+				break;
+			default:
+				assert(false);
+				break;
+			}
+
+			QAbstractButton* clickedButton = nullptr;
+
+			QObject::connect(dialog.buttonBox, &QDialogButtonBox::clicked, [&](QAbstractButton* button)
+				{
+					clickedButton = button;
+				});
+
+			if (dialog.exec())
+			{
+				if (dialog.compressedBinaryRadioButton->isChecked())
+				{
+					outputFileFormat = COMPRESSED_BINARY;
+				}
+				else if (dialog.binaryRadioButton->isChecked())
+				{
+					outputFileFormat = BINARY;
+				}
+				else if (dialog.asciiRadioButton->isChecked())
+				{
+					outputFileFormat = ASCII;
+				}
+				else
+				{
+					assert(false);
+				}
+
+				s_previousOutputFileFormat = outputFileFormat;
+
+				if (clickedButton == dialog.buttonBox->button(QDialogButtonBox::StandardButton::YesToAll))
+				{
+					// remember once and for all the output file format
+					s_outputFileFormat = outputFileFormat;
+				}
+			}
+			else
+			{
+				return CC_FERR_CANCELED_BY_USER;
+			}
+		}
+	}
 
 	//the cloud to save
 	ccPointCloud* ccCloud = ccHObjectCaster::ToPointCloud(entity);
@@ -80,7 +176,7 @@ CC_FILE_ERROR PcdFilter::saveToFile(ccHObject* entity, const QString& filename, 
 	}
 
 	//search for a sensor as child (we take the first if there are several of them)
-	ccSensor* sensor(nullptr);
+	ccSensor* sensor = nullptr;
 	{
 		for (unsigned i = 0; i < ccCloud->getChildrenNumber(); ++i)
 		{
@@ -89,11 +185,18 @@ CC_FILE_ERROR PcdFilter::saveToFile(ccHObject* entity, const QString& filename, 
 			//try to cast to a ccSensor
 			sensor = ccHObjectCaster::ToSensor(child);
 			if (sensor)
+			{
 				break;
+			}
 		}
 	}
 
 	const CCVector3d& globalShift = ccCloud->getGlobalShift();
+
+	if (ccCloud->getGlobalScale() != 1.0)
+	{
+		ccLog::Warning("[PCD] Can't restore the Global scale when exporting to PCD format");
+	}
 
 	Eigen::Vector4f pos = Eigen::Vector4f::Zero();
 	Eigen::Quaternionf ori = Eigen::Quaternionf::Identity();
@@ -102,7 +205,7 @@ CC_FILE_ERROR PcdFilter::saveToFile(ccHObject* entity, const QString& filename, 
 	if (sensor)
 	{
 		//get sensor data
-		const ccGLMatrix& sensorMatrix = sensor->getRigidTransformation();
+		ccGLMatrix sensorMatrix = sensor->getRigidTransformation();
 
 		//translation
 		CCVector3 trans = sensorMatrix.getTranslationAsVec3D();
@@ -111,16 +214,7 @@ CC_FILE_ERROR PcdFilter::saveToFile(ccHObject* entity, const QString& filename, 
 		CCVector3 bbMin, bbMax;
 		ccCloud->getBoundingBox(bbMin, bbMax);
 		CCVector3 bbCenter = (bbMin + bbMax) / 2.0;
-		if (ccGlobalShiftManager::NeedShift(trans - bbCenter))
-		{
-			ccLog::Warning("Sensor center is too far from the points. Can't restore it without losing numerical accuracy...");
-			pclCloud = cc2smReader(ccCloud).getAsSM();
-
-			pos(0) = -static_cast<float>(globalShift.x);
-			pos(1) = -static_cast<float>(globalShift.y);
-			pos(2) = -static_cast<float>(globalShift.z);
-		}
-		else
+		if (!ccGlobalShiftManager::NeedShift(trans - bbCenter))
 		{
 			pos(0) = trans.x;
 			pos(1) = trans.y;
@@ -133,7 +227,27 @@ CC_FILE_ERROR PcdFilter::saveToFile(ccHObject* entity, const QString& filename, 
 					eigrot(i, j) = sensorMatrix.getColumn(j)[i];
 
 			//now translate to a quaternion
-			ori = Eigen::Quaternionf(eigrot);
+			ori = Eigen::Quaternionf(eigrot).normalized(); // need to normalize the output in case the input matrix is not purely 'orthogonal'
+
+			//it happens that the saved pose matrix doesn't capture everything (such as reflections)
+			//because of the quaternion form. Therefore we update the input 'poseMat' with what we
+			//have actually saved
+			{
+				CCCoreLib::SquareMatrix transMat(sensorMatrix.data(), true);
+				if (transMat.computeDet() < 0)
+				{
+					ccLog::Warning("[PCD] Sensor pose matrix seems to be a reflection. Can't save it as a quaternion (required by the PCD format). We will use the non-reflective form.");
+				}
+
+				eigrot = ori.toRotationMatrix();
+				for (int i = 0; i < 3; ++i)
+				{
+					for (int j = 0; j < 3; ++j)
+					{
+						sensorMatrix.getColumn(j)[i] = eigrot(i, j);
+					}
+				}
+			}
 
 			// we have to project the cloud to the sensor CS
 			ccPointCloud* tempCloud = ccCloud->cloneThis(nullptr, true);
@@ -152,10 +266,19 @@ CC_FILE_ERROR PcdFilter::saveToFile(ccHObject* entity, const QString& filename, 
 			delete tempCloud;
 			tempCloud = nullptr;
 		}
+		else
+		{
+			ccLog::Warning("Sensor center is too far from the points. Can't restore it without losing numerical accuracy...");
+		}
 	}
-	else
+
+	if (!pclCloud)
 	{
 		pclCloud = cc2smReader(ccCloud).getAsSM();
+
+		pos(0) = -static_cast<float>(globalShift.x);
+		pos(1) = -static_cast<float>(globalShift.y);
+		pos(2) = -static_cast<float>(globalShift.z);
 	}
 	
 	if (!pclCloud)
@@ -165,6 +288,7 @@ CC_FILE_ERROR PcdFilter::saveToFile(ccHObject* entity, const QString& filename, 
 
 	if (ccCloud->size() == 0)
 	{
+		//Specific case: empty cloud (header only)
 		pcl::PCDWriter p;
 		QFile file(filename);
 		if (!file.open(QFile::WriteOnly | QFile::Truncate))
@@ -174,7 +298,53 @@ CC_FILE_ERROR PcdFilter::saveToFile(ccHObject* entity, const QString& filename, 
 		stream << QString(p.generateHeaderBinary(*pclCloud, pos, ori).c_str()) << "DATA binary\n";
 		return CC_FERR_NO_ERROR;
 	}
-	if (pcl::io::savePCDFile( qPrintable(filename), *pclCloud, pos, ori, true) < 0) //DGM: warning, toStdString doesn't preserve "local" characters
+
+	try
+	{
+		pcl::PCDWriter p;
+
+		switch (outputFileFormat)
+		{
+		case COMPRESSED_BINARY:
+		{
+#ifdef _MSC_VER
+			std::ofstream ofs(filename.toStdWString(), std::wifstream::out | std::wifstream::binary);
+#else
+			std::ofstream ofs(filename.toStdString(), std::wifstream::out | std::wifstream::binary);
+#endif
+			if (p.writeBinaryCompressed(ofs, *pclCloud, pos, ori) < 0)
+			{
+				ofs.close();
+				return CC_FERR_THIRD_PARTY_LIB_FAILURE;
+			}
+			ofs.close();
+		}
+		break;
+
+		case BINARY:
+		{
+			if (p.writeBinary(filename.toStdString(), *pclCloud, pos, ori) < 0)
+			{
+				return CC_FERR_THIRD_PARTY_LIB_FAILURE;
+			}
+		}
+		break;
+
+		case ASCII:
+		{
+			if (p.writeASCII(filename.toStdString(), *pclCloud, pos, ori) < 0)
+			{
+				return CC_FERR_THIRD_PARTY_LIB_FAILURE;
+			}
+		}
+		break;
+
+		default:
+			assert(false);
+			break;
+		}
+	}
+	catch (...)
 	{
 		return CC_FERR_THIRD_PARTY_LIB_FAILURE;
 	}
@@ -229,24 +399,64 @@ CC_FILE_ERROR PcdFilter::loadFile(const QString& filename, ccHObject& container,
 		unsigned int cloudDataIndex = 0;
 		PCLCloud::Ptr inputCloud(new PCLCloud);
 
+		//To avoid issues with local characters, we will open the file 'manually' and then provide the contents to PCL directly
+#ifdef _MSC_VER
+		std::ifstream ifs(filename.toStdWString(), std::wifstream::in | std::wifstream::binary);
+#else
+		std::ifstream ifs(filename.toStdString(), std::wifstream::in | std::wifstream::binary);
+#endif
+
 		//Load the input file
 		pcl::PCDReader pcdReader;
-		if (pcdReader.readHeader(qPrintable(filename), *inputCloud, origin, orientation, pcdVersion, dataType, cloudDataIndex) < 0)
+		if (pcdReader.readHeader(ifs, *inputCloud, origin, orientation, pcdVersion, dataType, cloudDataIndex) < 0)
 		{
 			return CC_FERR_THIRD_PARTY_LIB_FAILURE;
 		}
 		ccLog::Print(QString("[PCL] PCD version: %1").arg(pcdVersion));
 
 		unsigned pointCount = static_cast<unsigned>(inputCloud->width * inputCloud->height);
-		ccLog::Print(QString("[PCL] %1: Point Count: %2").arg(qPrintable(filename)).arg(pointCount));
+		ccLog::Print(QString("[PCL] %1: %2 points").arg(filename).arg(pointCount));
 		if (pointCount == 0)
 		{
 			return CC_FERR_NO_LOAD;
 		}
 
-		if (pcdReader.read(qPrintable(filename), *inputCloud) < 0) //DGM: warning, toStdString doesn't preserve "local" characters
+		if (dataType == 0) // ASCII format
 		{
-			return CC_FERR_THIRD_PARTY_LIB_FAILURE;
+			ccLog::Print(QObject::tr("[PCL] Reading ASCII PCD file..."));
+			ifs.seekg(cloudDataIndex, std::ios::beg);
+			if (pcdReader.readBodyASCII(ifs, *inputCloud, pcdVersion) < 0) //DGM: warning, toStdString doesn't preserve "local" characters
+			{
+				return CC_FERR_THIRD_PARTY_LIB_FAILURE;
+			}
+		}
+		else // Binary
+		{
+			ccLog::Print(QObject::tr("[PCL] Reading %1 binary PCD file...").arg(dataType == 2 ? QObject::tr("compressed") : QObject::tr("uncompressed")));
+
+			std::vector<char> buffer;
+			try
+			{
+				qint64 fileSize = QFileInfo(filename).size();
+				buffer.resize(fileSize);
+
+				ifs.seekg(0, std::ios::beg);
+				ifs.read(buffer.data(), fileSize);
+				ifs.close();
+
+				if (pcdReader.readBodyBinary(reinterpret_cast<unsigned char*>(buffer.data()), *inputCloud, pcdVersion, dataType == 2, cloudDataIndex) < 0)
+				{
+					return CC_FERR_THIRD_PARTY_LIB_FAILURE;
+				}
+			}
+			catch (const std::bad_alloc&)
+			{
+				// try to read the file 'normally' in this case
+				if (pcdReader.read(qPrintable(filename), *inputCloud) < 0)
+				{
+					return CC_FERR_NOT_ENOUGH_MEMORY;
+				}
+			}
 		}
 
 		ccPointCloud::Grid::Shared grid;

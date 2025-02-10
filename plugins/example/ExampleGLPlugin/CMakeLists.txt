@@ -1,4 +1,4 @@
-option( PLUGIN_EXAMPLE_GL "Install example GL plugin" OFF )
+option( PLUGIN_EXAMPLE_GL "Install example GL plugin" ON )
 
 if( PLUGIN_EXAMPLE_GL )
     project( ExampleGLPlugin )

@@ -1,4 +1,4 @@
-option( PLUGIN_STANDARD_QCOMPASS "Check to install Compass plugin" OFF )
+option( PLUGIN_STANDARD_QCOMPASS "Check to install Compass plugin" ON )
 
 if( PLUGIN_STANDARD_QCOMPASS )
 	project( QCOMPASS_PLUGIN )

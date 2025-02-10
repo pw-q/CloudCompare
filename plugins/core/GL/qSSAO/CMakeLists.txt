@@ -1,4 +1,4 @@
-option( PLUGIN_GL_QSSAO "Install qSSAO plugin" OFF )
+option( PLUGIN_GL_QSSAO "Install qSSAO plugin" ON )
 
 if( PLUGIN_GL_QSSAO )
 	

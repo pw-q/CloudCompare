@@ -1,4 +1,4 @@
-option( PLUGIN_STANDARD_QCANUPO "Check to install qCanupo plugin" OFF )
+option( PLUGIN_STANDARD_QCANUPO "Check to install qCanupo plugin" ON )
 
 if( PLUGIN_STANDARD_QCANUPO )
 	project( QCANUPO_PLUGIN )

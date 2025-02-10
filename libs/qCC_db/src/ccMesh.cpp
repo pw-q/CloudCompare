@@ -795,12 +795,9 @@ ccMesh* ccMesh::cloneMesh(	ccGenericPointCloud* vertices/*=nullptr*/,
 			}
 
 			//if we have both the main array and per-triangle normals indexes, we can finish the job
-			if (cloneMesh)
-			{
-				cloneMesh->setTriNormsTable(clonedNormsTable);
-				assert(cloneMesh->m_triNormalIndexes);
-				m_triNormalIndexes->copy(*cloneMesh->m_triNormalIndexes); //should be ok as array is already reserved!
-			}
+			cloneMesh->setTriNormsTable(clonedNormsTable);
+			assert(cloneMesh->m_triNormalIndexes);
+			m_triNormalIndexes->copy(*cloneMesh->m_triNormalIndexes); //should be ok as array is already reserved!
 		}
 		else
 		{
@@ -1695,11 +1692,6 @@ void ccMesh::drawMeOnly(CC_DRAW_CONTEXT& context)
 		//display parameters
 		glDrawParams glParams;
 		getDrawingParameters(glParams);
-		//no normals shading without light!
-		if (!MACRO_LightIsEnabled(context))
-		{
-			glParams.showNorms = false;
-		}
 
 		//vertices visibility
 		const ccGenericPointCloud::VisibilityTableType& verticesVisibility = m_associatedCloud->getTheVisibilityArray();
@@ -1712,6 +1704,11 @@ void ccMesh::drawMeOnly(CC_DRAW_CONTEXT& context)
 		bool showTriNormals = (hasTriNormals() && triNormsShown());
 		//fix 'showNorms'
         glParams.showNorms = showTriNormals || (m_associatedCloud->hasNormals() && m_normalsDisplayed);
+		//no normals shading without light!
+		if (!MACRO_LightIsEnabled(context))
+		{
+			glParams.showNorms = false;
+		}
 
 		//materials & textures
 		bool applyMaterials = (hasMaterials() && materialsShown());
@@ -2636,7 +2633,7 @@ ccMesh* ccMesh::createNewMeshFromSelection(	bool removeSelectedTriangles,
 					int oldVertexIndex = tsi.i[j];
 					assert(oldVertexIndex < newIndexes.size());
 					tsi.i[j] = newIndexes[oldVertexIndex];
-					assert(tsi.i[j] >= 0 && tsi.i[j] < m_associatedCloud->size());
+					assert(tsi.i[j] < m_associatedCloud->size());
 				}
 			}
 		}
@@ -3048,15 +3045,21 @@ bool ccMesh::toFile_MeOnly(QFile& out, short dataVersion) const
 
 bool ccMesh::fromFile_MeOnly(QFile& in, short dataVersion, int flags, LoadedIDMap& oldToNewIDMap)
 {
+	ccLog::PrintVerbose(QString("Loading mesh %1...").arg(m_name));
+
 	if (!ccGenericMesh::fromFile_MeOnly(in, dataVersion, flags, oldToNewIDMap))
+	{
 		return false;
+	}
 
 	//as the associated cloud (=vertices) can't be saved directly (as it may be shared by multiple meshes)
 	//we only store its unique ID (dataVersion>=20) --> we hope we will find it at loading time (i.e. this
 	//is the responsibility of the caller to make sure that all dependencies are saved together)
 	uint32_t vertUniqueID = 0;
 	if (in.read((char*)&vertUniqueID, 4) < 0)
+	{
 		return ReadError();
+	}
 	//[DIRTY] WARNING: temporarily, we set the vertices unique ID in the 'm_associatedCloud' pointer!!!
 	*(uint32_t*)(&m_associatedCloud) = vertUniqueID;
 
@@ -3067,7 +3070,9 @@ bool ccMesh::fromFile_MeOnly(QFile& in, short dataVersion, int flags, LoadedIDMa
 		//is the responsibility of the caller to make sure that all dependencies are saved together)
 		uint32_t normArrayID = 0;
 		if (in.read((char*)&normArrayID, 4) < 0)
+		{
 			return ReadError();
+		}
 		//[DIRTY] WARNING: temporarily, we set the array unique ID in the 'm_triNormals' pointer!!!
 		*(uint32_t*)(&m_triNormals) = normArrayID;
 	}
@@ -3079,7 +3084,9 @@ bool ccMesh::fromFile_MeOnly(QFile& in, short dataVersion, int flags, LoadedIDMa
 		//is the responsibility of the caller to make sure that all dependencies are saved together)
 		uint32_t texCoordArrayID = 0;
 		if (in.read((char*)&texCoordArrayID, 4) < 0)
+		{
 			return ReadError();
+		}
 		//[DIRTY] WARNING: temporarily, we set the array unique ID in the 'm_texCoords' pointer!!!
 		*(uint32_t*)(&m_texCoords) = texCoordArrayID;
 	}
@@ -3091,21 +3098,29 @@ bool ccMesh::fromFile_MeOnly(QFile& in, short dataVersion, int flags, LoadedIDMa
 		//is the responsibility of the caller to make sure that all dependencies are saved together)
 		uint32_t matSetID = 0;
 		if (in.read((char*)&matSetID, 4) < 0)
+		{
 			return ReadError();
+		}
 		//[DIRTY] WARNING: temporarily, we set the array unique ID in the 'm_materials' pointer!!!
 		*(uint32_t*)(&m_materials) = matSetID;
 	}
 
 	//triangles indexes (dataVersion>=20)
 	if (!m_triVertIndexes)
+	{
 		return false;
-	if (!ccSerializationHelper::GenericArrayFromFile<CCCoreLib::VerticesIndexes, 3, unsigned>(*m_triVertIndexes, in, dataVersion))
+	}
+	if (!ccSerializationHelper::GenericArrayFromFile<CCCoreLib::VerticesIndexes, 3, unsigned>(*m_triVertIndexes, in, dataVersion, "vertex indexes"))
+	{
 		return false;
+	}
 
 	//per-triangle materials (dataVersion>=20))
 	bool hasTriMtlIndexes = false;
 	if (in.read((char*)&hasTriMtlIndexes, sizeof(bool)) < 0)
+	{
 		return ReadError();
+	}
 	if (hasTriMtlIndexes)
 	{
 		if (!m_triMtlIndexes)
@@ -3113,7 +3128,7 @@ bool ccMesh::fromFile_MeOnly(QFile& in, short dataVersion, int flags, LoadedIDMa
 			m_triMtlIndexes = new triangleMaterialIndexesSet();
 			m_triMtlIndexes->link();
 		}
-		if (!ccSerializationHelper::GenericArrayFromFile<int, 1, int>(*m_triMtlIndexes, in, dataVersion))
+		if (!ccSerializationHelper::GenericArrayFromFile<int, 1, int>(*m_triMtlIndexes, in, dataVersion, "material indexes"))
 		{
 			m_triMtlIndexes->release();
 			m_triMtlIndexes = nullptr;
@@ -3124,7 +3139,9 @@ bool ccMesh::fromFile_MeOnly(QFile& in, short dataVersion, int flags, LoadedIDMa
 	//per-triangle texture coordinates indexes (dataVersion>=20))
 	bool hasTexCoordIndexes = false;
 	if (in.read((char*)&hasTexCoordIndexes, sizeof(bool)) < 0)
+	{
 		return ReadError();
+	}
 	if (hasTexCoordIndexes)
 	{
 		if (!m_texCoordIndexes)
@@ -3132,7 +3149,7 @@ bool ccMesh::fromFile_MeOnly(QFile& in, short dataVersion, int flags, LoadedIDMa
 			m_texCoordIndexes = new triangleTexCoordIndexesSet();
 			m_texCoordIndexes->link();
 		}
-		if (!ccSerializationHelper::GenericArrayFromFile<Tuple3i, 3, int>(*m_texCoordIndexes, in, dataVersion))
+		if (!ccSerializationHelper::GenericArrayFromFile<Tuple3i, 3, int>(*m_texCoordIndexes, in, dataVersion, "texture coordinates"))
 		{
 			m_texCoordIndexes->release();
 			m_texCoordIndexes = nullptr;
@@ -3145,14 +3162,18 @@ bool ccMesh::fromFile_MeOnly(QFile& in, short dataVersion, int flags, LoadedIDMa
 	{
 		bool materialsShown = false;
 		if (in.read((char*)&materialsShown, sizeof(bool)) < 0)
+		{
 			return ReadError();
+		}
 		showMaterials(materialsShown);
 	}
 
 	//per-triangle normals  indexes (dataVersion>=20))
 	bool hasTriNormalIndexes = false;
 	if (in.read((char*)&hasTriNormalIndexes, sizeof(bool)) < 0)
+	{
 		return ReadError();
+	}
 	if (hasTriNormalIndexes)
 	{
 		if (!m_triNormalIndexes)
@@ -3161,7 +3182,7 @@ bool ccMesh::fromFile_MeOnly(QFile& in, short dataVersion, int flags, LoadedIDMa
 			m_triNormalIndexes->link();
 		}
 		assert(m_triNormalIndexes);
-		if (!ccSerializationHelper::GenericArrayFromFile<Tuple3i, 3, int>(*m_triNormalIndexes, in, dataVersion))
+		if (!ccSerializationHelper::GenericArrayFromFile<Tuple3i, 3, int>(*m_triNormalIndexes, in, dataVersion, "normal indexes"))
 		{
 			removePerTriangleNormalIndexes();
 			return false;
@@ -3173,13 +3194,17 @@ bool ccMesh::fromFile_MeOnly(QFile& in, short dataVersion, int flags, LoadedIDMa
 		//'per-triangle normals shown' state (dataVersion>=20 && dataVersion<29))
 		bool triNormsShown = false;
 		if (in.read((char*)&triNormsShown, sizeof(bool)) < 0)
+		{
 			return ReadError();
+		}
 		showTriNorms(triNormsShown);
 
 		//'polygon stippling' state (dataVersion>=20 && dataVersion<29))
 		bool stippling = false;
 		if (in.read((char*)&stippling, sizeof(bool)) < 0)
+		{
 			return ReadError();
+		}
 		enableStippling(stippling);
 	}
 
@@ -3325,9 +3350,9 @@ bool ccMesh::interpolateColors(const CCCoreLib::VerticesIndexes& vertIndexes, co
 	const ccColor::Rgba& C2 = m_associatedCloud->getPointColor(vertIndexes.i2);
 	const ccColor::Rgba& C3 = m_associatedCloud->getPointColor(vertIndexes.i3);
 
-	color.r = static_cast<ColorCompType>(floor(C1.r * w.u[0] + C2.r * w.u[1] + C3.r * w.u[2]));
-	color.g = static_cast<ColorCompType>(floor(C1.g * w.u[0] + C2.g * w.u[1] + C3.g * w.u[2]));
-	color.b = static_cast<ColorCompType>(floor(C1.b * w.u[0] + C2.b * w.u[1] + C3.b * w.u[2]));
+	color.r = static_cast<ColorCompType>(C1.r * w.u[0] + C2.r * w.u[1] + C3.r * w.u[2]); //static_cast is equivalent to floor if value >= 0
+	color.g = static_cast<ColorCompType>(C1.g * w.u[0] + C2.g * w.u[1] + C3.g * w.u[2]); //static_cast is equivalent to floor if value >= 0
+	color.b = static_cast<ColorCompType>(C1.b * w.u[0] + C2.b * w.u[1] + C3.b * w.u[2]); //static_cast is equivalent to floor if value >= 0
 
 	return true;
 }
@@ -3350,10 +3375,10 @@ bool ccMesh::interpolateColors(const CCCoreLib::VerticesIndexes& vertIndexes, co
 	const ccColor::Rgba& C2 = m_associatedCloud->getPointColor(vertIndexes.i2);
 	const ccColor::Rgba& C3 = m_associatedCloud->getPointColor(vertIndexes.i3);
 
-	color.r = static_cast<ColorCompType>(floor(C1.r * w.u[0] + C2.r * w.u[1] + C3.r * w.u[2]));
-	color.g = static_cast<ColorCompType>(floor(C1.g * w.u[0] + C2.g * w.u[1] + C3.g * w.u[2]));
-	color.b = static_cast<ColorCompType>(floor(C1.b * w.u[0] + C2.b * w.u[1] + C3.b * w.u[2]));
-	color.a = static_cast<ColorCompType>(floor(C1.a * w.u[0] + C2.a * w.u[1] + C3.a * w.u[2]));
+	color.r = static_cast<ColorCompType>(C1.r * w.u[0] + C2.r * w.u[1] + C3.r * w.u[2]); //static_cast is equivalent to floor if value >= 0
+	color.g = static_cast<ColorCompType>(C1.g * w.u[0] + C2.g * w.u[1] + C3.g * w.u[2]); //static_cast is equivalent to floor if value >= 0
+	color.b = static_cast<ColorCompType>(C1.b * w.u[0] + C2.b * w.u[1] + C3.b * w.u[2]); //static_cast is equivalent to floor if value >= 0
+	color.a = static_cast<ColorCompType>(C1.a * w.u[0] + C2.a * w.u[1] + C3.a * w.u[2]); //static_cast is equivalent to floor if value >= 0
 
 	return true;
 }
@@ -3403,8 +3428,8 @@ bool ccMesh::getVertexColorFromMaterial(unsigned triIndex, unsigned char vertInd
 
 				//get color from texture image
 				const QImage texture = material->getTexture();
-				int xPix = std::min(static_cast<int>(floor(tx * texture.width())), texture.width() - 1);
-				int yPix = std::min(static_cast<int>(floor(ty * texture.height())), texture.height() - 1);
+				int xPix = std::min(static_cast<int>(tx * texture.width()), texture.width() - 1); //static_cast is equivalent to floor if value >= 0
+				int yPix = std::min(static_cast<int>(ty * texture.height()), texture.height() - 1); //static_cast is equivalent to floor if value >= 0
 
 				QRgb pixel = texture.pixel(xPix, yPix);
 
@@ -3519,8 +3544,8 @@ bool ccMesh::getColorFromMaterial(unsigned triIndex, const CCVector3& P, ccColor
 	//get color from texture image
 	{
 		const QImage texture = material->getTexture();
-		int xPix = std::min(static_cast<int>(floor(x*texture.width())), texture.width() - 1);
-		int yPix = std::min(static_cast<int>(floor(y*texture.height())), texture.height() - 1);
+		int xPix = std::min(static_cast<int>(x*texture.width()), texture.width() - 1); //static_cast is equivalent to floor if value >= 0
+		int yPix = std::min(static_cast<int>(y*texture.height()), texture.height() - 1); //static_cast is equivalent to floor if value >= 0
 
 		QRgb pixel = texture.pixel(xPix, yPix);
 

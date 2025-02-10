@@ -1,6 +1,18 @@
-project( CloudCompare VERSION 2.13.0 )
+project( CloudCompare VERSION 2.14.0 )
 
 include( CMakePolicies NO_POLICY_SCOPE )
+
+option( CC_USE_EIGEN
+	"Compile CloudCompare with Eigen (for registration)"
+	OFF
+)
+
+if ( CC_USE_EIGEN )
+	set ( EIGEN_ROOT_DIR "/usr" )
+	if ( NOT EIGEN_ROOT_DIR )
+		message( SEND_ERROR "No Eigen root directory specified (EIGEN_ROOT_DIR)" )
+	endif()
+endif()
 
 include_directories( ${CloudComparePlugins_SOURCE_DIR} )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
@@ -49,6 +61,21 @@ if( CCCORELIB_USE_QT_CONCURRENT )
 	target_link_libraries( ${PROJECT_NAME}
 		Qt5::Concurrent
 	)
+endif()
+
+# Eigen
+if ( CC_USE_EIGEN )
+
+	target_include_directories( ${PROJECT_NAME}
+		PUBLIC
+			${EIGEN_ROOT_DIR}
+	)
+
+	target_compile_definitions( ${PROJECT_NAME}
+		PUBLIC
+			CC_USES_EIGEN
+	)
+
 endif()
 
 # Add custom preprocessor definitions

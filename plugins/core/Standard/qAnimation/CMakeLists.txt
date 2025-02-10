@@ -1,4 +1,4 @@
-option( PLUGIN_STANDARD_QANIMATION "Install qAnimation plugin" OFF )
+option( PLUGIN_STANDARD_QANIMATION "Install qAnimation plugin" ON )
 
 if( PLUGIN_STANDARD_QANIMATION )
 	option( QANIMATION_WITH_FFMPEG_SUPPORT "Setup FFMPEG support (to create movies instead of images with qAnimation)" OFF )

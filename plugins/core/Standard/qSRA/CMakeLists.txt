@@ -1,4 +1,4 @@
-option( PLUGIN_STANDARD_QSRA "Install qSRA (Surface of Revolution Analysis) plugin" OFF )
+option( PLUGIN_STANDARD_QSRA "Install qSRA (Surface of Revolution Analysis) plugin" ON )
 
 # CloudCompare 'Surface of Revolution Analysis' plugin
 if( PLUGIN_STANDARD_QSRA )

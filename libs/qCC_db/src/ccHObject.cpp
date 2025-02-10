@@ -65,9 +65,9 @@ ccHObject::ccHObject(const ccHObject& object)
 	, ccDrawableObject(object)
 	, m_parent(nullptr)
 	, m_selectionBehavior(object.m_selectionBehavior)
+	, m_glTransHistory(object.m_glTransHistory)
 	, m_isDeleting(false)
 {
-	m_glTransHistory.toIdentity();
 }
 
 ccHObject::~ccHObject()
@@ -90,9 +90,21 @@ ccHObject::~ccHObject()
 			it->first->removeDependencyFlag(this,DP_NOTIFY_OTHER_ON_DELETE); //in order to avoid any loop!
 			//delete object
 			if (it->first->isShareable())
-				dynamic_cast<CCShareable*>(it->first)->release();
+			{
+				CCShareable* shareable = dynamic_cast<CCShareable*>(it->first);
+				if (shareable)
+				{
+					shareable->release();
+				}
+				else
+				{
+					assert(false);
+				}
+			}
 			else
+			{
 				delete it->first;
+			}
 		}
 	}
 	m_dependencies.clear();
@@ -368,9 +380,21 @@ bool ccHObject::addChild(ccHObject* child, int dependencyFlags/*=DP_PARENT_OF_OT
 	{
 		child->setParent(this);
 		if (child->isShareable())
-			dynamic_cast<CCShareable*>(child)->link();
+		{
+			CCShareable* shareable = dynamic_cast<CCShareable*>(child);
+			if (shareable)
+			{
+				shareable->link();
+			}
+			else
+			{
+				assert(false);
+			}
+		}
 		if (!child->getDisplay())
+		{
 			child->setDisplay(getDisplay());
+		}
 	}
 
 	return true;
@@ -932,7 +956,15 @@ void ccHObject::removeChild(int pos)
 		//delete object
 		if (child->isShareable())
 		{
-			dynamic_cast<CCShareable*>(child)->release();
+			CCShareable* shareable = dynamic_cast<CCShareable*>(child);
+			if (shareable)
+			{
+				shareable->release();
+			}
+			else
+			{
+				assert(false);
+			}
 		}
 		else/* if (!child->isA(CC_TYPES::POINT_OCTREE))*/
 		{
@@ -956,9 +988,21 @@ void ccHObject::removeAllChildren()
 		if ((flags & DP_DELETE_OTHER) == DP_DELETE_OTHER)
 		{
 			if (child->isShareable())
-				dynamic_cast<CCShareable*>(child)->release();
+			{
+				CCShareable* shareable = dynamic_cast<CCShareable*>(child);
+				if (shareable)
+				{
+					shareable->release();
+				}
+				else
+				{
+					assert(false);
+				}
+			}
 			else
+			{
 				delete child;
+			}
 		}
 	}
 }
@@ -1090,13 +1134,12 @@ bool ccHObject::fromFile(QFile& in, short dataVersion, int flags, LoadedIDMap& o
 		{
 			if (child->fromFile(in, dataVersion, flags, oldToNewIDMap))
 			{
-				//FIXME
-				//addChild(child,child->getFlagState(CC_FATHER_DEPENDENT));
 				addChild(child);
 			}
 			else
 			{
 				//delete child; //we can't do this as the object might be invalid
+				addChild(child); // but it might still be partly 'valid', we'll let the user decide if (s)he takes the risk to load it
 				return false;
 			}
 		}
@@ -1245,36 +1288,56 @@ bool ccHObject::fromFile_MeOnly(QFile& in, short dataVersion, int flags, LoadedI
 
 	//'visible' state (dataVersion>=20)
 	if (in.read(reinterpret_cast<char*>(&m_visible), sizeof(bool)) < 0)
+	{
 		return ReadError();
+	}
 	//'lockedVisibility' state (dataVersion>=20)
 	if (in.read(reinterpret_cast<char*>(&m_lockedVisibility), sizeof(bool)) < 0)
+	{
 		return ReadError();
+	}
 	//'colorsDisplayed' state (dataVersion>=20)
 	if (in.read(reinterpret_cast<char*>(&m_colorsDisplayed), sizeof(bool)) < 0)
+	{
 		return ReadError();
+	}
 	//'normalsDisplayed' state (dataVersion>=20)
 	if (in.read(reinterpret_cast<char*>(&m_normalsDisplayed), sizeof(bool)) < 0)
+	{
 		return ReadError();
+	}
 	//'sfDisplayed' state (dataVersion>=20)
 	if (in.read(reinterpret_cast<char*>(&m_sfDisplayed), sizeof(bool)) < 0)
+	{
 		return ReadError();
+	}
 	//'colorIsOverridden' state (dataVersion>=20)
 	if (in.read(reinterpret_cast<char*>(&m_colorIsOverridden), sizeof(bool)) < 0)
+	{
 		return ReadError();
+	}
+
 	if (m_colorIsOverridden)
 	{
 		//'tempColor' (dataVersion>=20)
-		if (in.read(reinterpret_cast<char*>(m_tempColor.rgba), sizeof(ColorCompType)*3) < 0)
+		if (in.read(reinterpret_cast<char*>(m_tempColor.rgba), sizeof(ColorCompType) * 3) < 0)
+		{
 			return ReadError();
+		}
 		m_tempColor.a = ccColor::MAX;
 	}
+
 	//'glTransEnabled' state (dataVersion>=20)
 	if (in.read(reinterpret_cast<char*>(&m_glTransEnabled), sizeof(bool)) < 0)
+	{
 		return ReadError();
+	}
+
 	if (m_glTransEnabled)
 	{
 		if (!m_glTrans.fromFile(in, dataVersion, flags, oldToNewIDMap))
 		{
+			m_glTransEnabled = false;
 			return false;
 		}
 	}
@@ -1284,7 +1347,7 @@ bool ccHObject::fromFile_MeOnly(QFile& in, short dataVersion, int flags, LoadedI
 	{
 		if (in.read(reinterpret_cast<char*>(&m_showNameIn3D), sizeof(bool)) < 0)
 		{
-			return WriteError();
+			return ReadError();
 		}
 	}
 	else

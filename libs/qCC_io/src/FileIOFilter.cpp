@@ -49,15 +49,25 @@
 **/
 static FileIOFilter::FilterContainer s_ioFilters;
 
-static unsigned s_sessionCounter = 0;
+static unsigned s_sessionCounter = 0; //!< Session counter
 
 // This extra definition is required in C++11.
 // In C++17, class-level "static constexpr" is implicitly inline, so these are not required.
 constexpr float FileIOFilter::DEFAULT_PRIORITY;
 
+QString FileIOFilter::GetRealFilename(QString filename)
+{
+	QFileInfo fi(filename);
+	if (fi.isSymLink())
+	{
+		return fi.symLinkTarget();
+	}
 
-FileIOFilter::FileIOFilter( const FilterInfo &info ) :
-	m_filterInfo( info )
+	return filename;
+}
+
+FileIOFilter::FileIOFilter( const FilterInfo &info )
+	: m_filterInfo( info )
 {
 #ifdef QT_DEBUG	
 	if ( !(m_filterInfo.features & DynamicInfo) )
@@ -379,12 +389,15 @@ ccHObject* FileIOFilter::LoadFromFile(	const QString& filename,
 	return container;
 }
 
-ccHObject* FileIOFilter::LoadFromFile(	const QString& filename,
+ccHObject* FileIOFilter::LoadFromFile(	const QString& inputFilename,
 										LoadParameters& loadParameters,
 										CC_FILE_ERROR& result,
 										const QString& fileFilter )
 {
 	Shared filter;
+
+	//special case for symbolic link, shortcut or alias files
+	QString filename = GetRealFilename(inputFilename);
 	
 	//if the right filter is specified by the caller
 	if (!fileFilter.isEmpty())
@@ -424,12 +437,17 @@ ccHObject* FileIOFilter::LoadFromFile(	const QString& filename,
 }
 
 CC_FILE_ERROR FileIOFilter::SaveToFile(	ccHObject* entities,
-										const QString& filename,
+										const QString& inputFilename,
 										const SaveParameters& parameters,
 										Shared filter)
 {
-	if (!entities || filename.isEmpty() || !filter)
+	if (!entities || inputFilename.isEmpty() || !filter)
+	{
 		return CC_FERR_BAD_ARGUMENT;
+	}
+
+	//special case for symbolic link, shortcut or alias files
+	QString filename = GetRealFilename(inputFilename);
 
 	//if the file name has no extension, we had a default one!
 	QString completeFileName(filename);
@@ -467,7 +485,9 @@ CC_FILE_ERROR FileIOFilter::SaveToFile(	ccHObject* entities,
 										const QString& fileFilter)
 {
 	if (fileFilter.isEmpty())
+	{
 		return CC_FERR_BAD_ARGUMENT;
+	}
 
 	Shared filter = GetFilter(fileFilter, false);
 	if (!filter)
@@ -549,9 +569,13 @@ void FileIOFilter::DisplayErrorMessage(CC_FILE_ERROR err, const QString& action,
 
 	QString outputString = QString("An error occurred while %1 '%2': ").arg(action, filename) + errorStr;
 	if (warning)
+	{
 		ccLog::Warning(outputString);
+	}
 	else
+	{
 		ccLog::Error(outputString);
+	}
 }
 
 bool FileIOFilter::CheckForSpecialChars(const QString& filename)
@@ -572,8 +596,14 @@ bool FileIOFilter::HandleGlobalShift(	const CCVector3d& P,
 	{
 		Pshift = *loadParameters._coordinatesShift;
 		preserveCoordinateShift = loadParameters.preserveShiftOnSave;
-	}
 	
+		if (nullptr != loadParameters._coordinatesShiftForced  && *loadParameters._coordinatesShiftForced)
+		{
+			// the user asked for this coordinate shift to be applied to all entities!
+			return true;
+		}
+	}
+
 	bool applyAll = false;
 	if (	sizeof(PointCoordinateType) < 8
 		&&	ccGlobalShiftManager::Handle(	P,
@@ -591,6 +621,17 @@ bool FileIOFilter::HandleGlobalShift(	const CCVector3d& P,
 			if (nullptr != loadParameters._coordinatesShiftEnabled)
 			{
 				*loadParameters._coordinatesShiftEnabled = true;
+			}
+			if (applyAll && nullptr != loadParameters._coordinatesShiftForced)
+			{
+				bool needShift = ccGlobalShiftManager::NeedShift(P + Pshift);
+				if (needShift)
+				{
+					// if the user has clicked on 'apply all' while the inupt shift is not sufficient,
+					// this means that this shift needs to be forced to all the entities!
+					// (otherwise, if the shift is sufficient, then it will probably be ok for the next entities)
+					*loadParameters._coordinatesShiftForced = true;
+				}
 			}
 			if (nullptr != loadParameters._coordinatesShift)
 			{

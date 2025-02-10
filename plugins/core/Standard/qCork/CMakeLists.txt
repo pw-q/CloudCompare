@@ -1,4 +1,4 @@
-option( PLUGIN_STANDARD_QCORK "Install qCORK plugin" OFF )
+option( PLUGIN_STANDARD_QCORK "Install qCORK plugin" ONOFF )
 
 # CloudCompare Mesh CSG operations plugin (based on the Cork library)
 if( PLUGIN_STANDARD_QCORK )

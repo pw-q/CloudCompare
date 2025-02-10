@@ -1,4 +1,4 @@
-option( PLUGIN_EXAMPLE_IO "Install example I/O plugin" OFF )
+option( PLUGIN_EXAMPLE_IO "Install example I/O plugin" ON )
 
 if( PLUGIN_EXAMPLE_IO )
 	project( ExampleIOPlugin )

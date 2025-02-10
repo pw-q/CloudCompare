@@ -231,7 +231,7 @@ CC_FILE_ERROR LasIOFilter::loadFile(const QString&  fileName,
 		}
 	}
 
-	laszip_F64    laszipCoordinates[3] = {0};
+	laszip_F64    laszipCoordinates[3]{0};
 	laszip_point* laszipPoint{nullptr};
 	CCVector3     currentPoint{};
 	bool          preserveGlobalShift{true};
@@ -252,7 +252,7 @@ CC_FILE_ERROR LasIOFilter::loadFile(const QString&  fileName,
 
 	loader.setIgnoreFieldsWithDefaultValues(m_openDialog.shouldIgnoreFieldsWithDefaultValues());
 	loader.setForce8bitRgbMode(m_openDialog.shouldForce8bitColors());
-	loader.setManualTimeShift(m_openDialog.timeShiftValue());
+	loader.setDecomposeClassification(m_openDialog.shouldDecomposeClassification());
 	std::unique_ptr<LasWaveformLoader> waveformLoader{nullptr};
 	if (LasDetails::HasWaveform(laszipHeader->point_data_format))
 	{
@@ -532,50 +532,136 @@ CC_FILE_ERROR LasIOFilter::saveToFile(ccHObject* entity, const QString& filename
 	}
 
 	// Determine the best LAS offset (required for determing the best LAS scale)
-	CCVector3d lasOffset;
-	bool       hasLASOffset       = LasMetadata::LoadOffsetFrom(*pointCloud, lasOffset);
-	bool       lasOffsetCanBeUsed = hasLASOffset && !ccGlobalShiftManager::NeedShift(bbMax - lasOffset);
+	CCVector3d originalLASOffset(0, 0, 0);
+	bool       hasLASOffset               = LasMetadata::LoadOffsetFrom(*pointCloud, originalLASOffset);
+	bool       orignialLasOffsetCanBeUsed = hasLASOffset && !ccGlobalShiftManager::NeedShift(bbMax - originalLASOffset);
 
-	CCVector3d globaShift           = pointCloud->getGlobalShift();
+	CCVector3d globalShift          = pointCloud->getGlobalShift();
 	bool       hasGlobalShift       = pointCloud->isShifted();
-	bool       globalShiftCanBeUsed = hasGlobalShift && !ccGlobalShiftManager::NeedShift(bbMax + globaShift); //'global shift' is the opposite of LAS offset ;)
+	bool       globalShiftCanBeUsed = hasGlobalShift && !ccGlobalShiftManager::NeedShift(bbMax + globalShift); //'global shift' is the opposite of LAS offset ;)
 
+	bool noShiftCanBeUsed     = !ccGlobalShiftManager::NeedShift(bbMax);
 	bool minBBCornerCanBeUsed = !ccGlobalShiftManager::NeedShift(bbMax - bbMin);
 
-	if (!lasOffsetCanBeUsed)
+	bool globalShiftAndLASOffsetXYAreDifferent = (hasLASOffset != hasGlobalShift
+	                                              || std::abs(originalLASOffset.x + globalShift.x) > 0.01 //'global shift' is the opposite of LAS offset ;)
+	                                              || std::abs(originalLASOffset.y + globalShift.y) > 0.01);
+
+	// List the available offset options
+	QMap<LasSaveDialog::Offset, CCVector3d> availableOffsets;
+	if (hasLASOffset)
+	{
+		availableOffsets[LasSaveDialog::ORIGN_LAS_OFFSET] = originalLASOffset;
+	}
+	if (hasGlobalShift)
+	{
+		availableOffsets[LasSaveDialog::GLOBAL_SHIFT] = -globalShift; //'global shift' is the opposite of LAS offset ;)
+	}
+	CCVector3d minBBCornerOffset(bbMin.x, bbMin.y, 0.0);
+	//if (minBBCornerCanBeUsed) // we can still display it, even if it's not optimal
+	{
+		availableOffsets[LasSaveDialog::MIN_BB_CORNER] = minBBCornerOffset;
+	}
+	static CCVector3d s_customLASOffset(0, 0, 0);
+	static bool       s_customLASOffsetWasUsedPreviously = false;
+	{
+		availableOffsets[LasSaveDialog::CUSTOM_LAS_OFFSET] = s_customLASOffset;
+	}
+	bool customLASOffsetCanBeUsed = s_customLASOffsetWasUsedPreviously && !ccGlobalShiftManager::NeedShift(bbMax - s_customLASOffset);
+
+	// Now select the default offset (may be changed later by the user in the GUI version)
+	LasSaveDialog::Offset defaultSelectedOffset = LasSaveDialog::ORIGN_LAS_OFFSET;
+	if (customLASOffsetCanBeUsed)
+	{
+		// If the user has input a custom LAS offset, that's probably for good reasons
+		defaultSelectedOffset = LasSaveDialog::CUSTOM_LAS_OFFSET;
+
+		ccLog::Warning(QString("[LAS] The previously input custom LAS offset (%1 ; %2 ; %3) was selected by default").arg(s_customLASOffset.x).arg(s_customLASOffset.y).arg(s_customLASOffset.z));
+	}
+	else if (globalShiftCanBeUsed && globalShiftAndLASOffsetXYAreDifferent)
+	{
+		// If the global shift is different from the LAS offset, we prefer it
+		defaultSelectedOffset = LasSaveDialog::GLOBAL_SHIFT;
+
+		if (hasLASOffset)
+		{
+			ccLog::Warning("[LAS] The current Global Shift will be used as LAS offset by default (potentially different from the original LAS offset)");
+		}
+	}
+	else if (parameters.parentWidget && !hasGlobalShift && noShiftCanBeUsed && globalShiftAndLASOffsetXYAreDifferent)
+	{
+		// In the GUI version, we can choose no shift by default, as the user can now change this behavior and restore the original LAS offset
+		availableOffsets[LasSaveDialog::GLOBAL_SHIFT] = CCVector3d(0, 0, 0);
+		defaultSelectedOffset                         = LasSaveDialog::GLOBAL_SHIFT;
+
+		if (hasLASOffset)
+		{
+			ccLog::Warning("[LAS] LAS offset will be set to (0,0,0) by default (potentially different from the original LAS offset)");
+		}
+	}
+	else if (orignialLasOffsetCanBeUsed)
+	{
+		// Else if we can use the original offset, let's use it
+		defaultSelectedOffset = LasSaveDialog::ORIGN_LAS_OFFSET;
+
+		if (hasGlobalShift || globalShiftAndLASOffsetXYAreDifferent)
+		{
+			ccLog::Warning(QString("[LAS] The original LAS offset (%1 ; %2 ; %3) will be used by default").arg(originalLASOffset.x).arg(originalLASOffset.y).arg(originalLASOffset.z));
+		}
+	}
+	else
 	{
 		if (hasLASOffset)
 		{
-			ccLog::Warning(QString("[LAS] The former LAS offset (%1 ; %2 ; %3) doesn't seem to be optimal").arg(lasOffset.x).arg(lasOffset.y).arg(lasOffset.z));
+			ccLog::Warning(QString("[LAS] The original LAS offset (%1 ; %2 ; %3) doesn't seem to be optimal").arg(originalLASOffset.x).arg(originalLASOffset.y).arg(originalLASOffset.z));
 		}
 
 		if (hasGlobalShift && (globalShiftCanBeUsed || !minBBCornerCanBeUsed))
 		{
-			ccLog::Warning("[LAS] Will use the entity Global Shift as LAS offset");
-			lasOffset = -globaShift; //'global shift' is the opposite of LAS offset ;)
+			ccLog::Warning("[LAS] The current Global Shift will be used as LAS offset by default");
+			defaultSelectedOffset = LasSaveDialog::GLOBAL_SHIFT;
 		}
 		else if (minBBCornerCanBeUsed)
 		{
-			ccLog::Warning("[LAS] Will use the minimum bounding-box corner (X, Y) as LAS offset");
-			lasOffset.x = bbMin.x;
-			lasOffset.y = bbMin.y;
-			lasOffset.z = 0;
+			ccLog::Warning("[LAS] The minimum bounding-box corner (X, Y) will be used as LAS offset by default");
+			defaultSelectedOffset = LasSaveDialog::MIN_BB_CORNER;
+		}
+		else
+		{
+			// we still use the original offset as we don't have a better solution...
+		}
+	}
+	saveDialog.setOffsets(availableOffsets, defaultSelectedOffset);
+	// consistency check
+	{
+		LasSaveDialog::Offset dummyOffsetType;
+		if ((saveDialog.chosenOffset(dummyOffsetType) - availableOffsets[defaultSelectedOffset]).norm() > 1.0e-6
+		    || dummyOffsetType != defaultSelectedOffset)
+		{
+			ccLog::Error("Internal error: inconsistency detected between the save dialog and the code... please contact the admin");
 		}
 	}
 
-	// Maximum cloud 'extents' relatively to the 'offset' point
-	CCVector3d diagPos = bbMax - lasOffset;
-	CCVector3d diagNeg = lasOffset - bbMin;
-	CCVector3d diag(std::max(diagPos.x, diagNeg.x),
-	                std::max(diagPos.y, diagNeg.y),
-	                std::max(diagPos.z, diagNeg.z));
+	// compute the optimal scale
+	CCVector3d optimalScale;
+	{
+		assert(availableOffsets.contains(defaultSelectedOffset));
+		CCVector3d defaultLASOffset = availableOffsets[defaultSelectedOffset];
 
-	// Optimal scale (for accuracy) --> 1e-9 because the maximum integer is roughly +/-2e+9
-	CCVector3d optimalScale(1.0e-9 * std::max<double>(diag.x, 1.0),
-	                        1.0e-9 * std::max<double>(diag.y, 1.0),
-	                        1.0e-9 * std::max<double>(diag.z, 1.0));
+		// Maximum cloud 'extents' relatively to the 'offset' point
+		CCVector3d diagPos = bbMax - defaultLASOffset;
+		CCVector3d diagNeg = defaultLASOffset - bbMin;
+		CCVector3d diag(std::max(diagPos.x, diagNeg.x),
+		                std::max(diagPos.y, diagNeg.y),
+		                std::max(diagPos.z, diagNeg.z));
 
-	// See if we have a scale from an origin las file
+		// Optimal scale (for accuracy) --> 1e-9 because the maximum 32bits integer is roughly +/-2e+9
+		optimalScale = {1.0e-9 * std::max<double>(diag.x, 1.0),
+		                1.0e-9 * std::max<double>(diag.y, 1.0),
+		                1.0e-9 * std::max<double>(diag.z, 1.0)};
+	}
+
+	// See if we have a scale from an origin LAS file
 	CCVector3d originalScale;
 	bool       canUseOriginalScale = false;
 	bool       hasScaleMetaData    = LasMetadata::LoadScaleFrom(*pointCloud, originalScale);
@@ -635,8 +721,17 @@ CC_FILE_ERROR LasIOFilter::saveToFile(ccHObject* entity, const QString& filename
 		saveDialog.selectedVersion(params.versionMajor, params.versionMinor);
 		params.pointFormat = saveDialog.selectedPointFormat();
 
-		params.lasScale  = saveDialog.chosenScale();
-		params.lasOffset = lasOffset;
+		params.lasScale = saveDialog.chosenScale();
+
+		LasSaveDialog::Offset offsetType;
+		params.lasOffset = saveDialog.chosenOffset(offsetType);
+
+		// Remember any custom offset input by the user
+		if (offsetType == LasSaveDialog::CUSTOM_LAS_OFFSET)
+		{
+			s_customLASOffset                  = params.lasOffset;
+			s_customLASOffsetWasUsedPreviously = true;
+		}
 	}
 
 	// In case of command line call, add automatically all remaining scalar fields as extra scalar fields
@@ -645,12 +740,12 @@ CC_FILE_ERROR LasIOFilter::saveToFile(ccHObject* entity, const QString& filename
 		uint sfCount = pointCloud->getNumberOfScalarFields();
 		for (uint index = 0; index < sfCount; index++)
 		{
-			ccScalarField* sf     = static_cast<ccScalarField*>(pointCloud->getScalarField(index));
-			const char*    sfName = sf->getName();
-			bool           found  = false;
+			ccScalarField*     sf     = static_cast<ccScalarField*>(pointCloud->getScalarField(index));
+			const std::string& sfName = sf->getName();
+			bool               found  = false;
 			for (auto& el : params.standardFields)
 			{
-				if (strcmp(sfName, el.name()) == 0)
+				if (sfName.compare(el.name()) == 0)
 				{
 					found = true;
 					break;
@@ -660,7 +755,7 @@ CC_FILE_ERROR LasIOFilter::saveToFile(ccHObject* entity, const QString& filename
 			{
 				for (auto& el : params.extraFields)
 				{
-					if (strcmp(sfName, el.scalarFields[0]->getName()) == 0)
+					if (sfName.compare(el.scalarFields[0]->getName()) == 0)
 					{
 						found = true;
 						break;
@@ -669,7 +764,7 @@ CC_FILE_ERROR LasIOFilter::saveToFile(ccHObject* entity, const QString& filename
 			}
 			if (!found)
 			{
-				ccLog::Print("[LAS] scalar field " + QString(sfName) + " will be saved automatically in the extra fields of the output file");
+				ccLog::Print("[LAS] scalar field " + QString::fromStdString(sfName) + " will be saved automatically in the extra fields of the output file");
 				LasExtraScalarField field;
 				const std::string   stdName = sfName;
 				strncpy(field.name, stdName.c_str(), LasExtraScalarField::MAX_NAME_SIZE);

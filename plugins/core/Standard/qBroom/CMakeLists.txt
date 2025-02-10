@@ -1,4 +1,4 @@
-option( PLUGIN_STANDARD_QBROOM "Install qBroom plugin" OFF )
+option( PLUGIN_STANDARD_QBROOM "Install qBroom plugin" ON )
 
 if( PLUGIN_STANDARD_QBROOM )
 	project( QBROOM_PLUGIN )

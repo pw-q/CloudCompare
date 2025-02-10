@@ -1,4 +1,4 @@
-option( PLUGIN_STANDARD_QHOUGH_NORMALS "Install qHoughNormals plugin" OFF )
+option( PLUGIN_STANDARD_QHOUGH_NORMALS "Install qHoughNormals plugin" ON )
 
 # CloudCompare 'Hough Normals' plugin (see https://github.com/aboulch/normals_Hough)
 if( PLUGIN_STANDARD_QHOUGH_NORMALS )
@@ -6,7 +6,7 @@ if( PLUGIN_STANDARD_QHOUGH_NORMALS )
 
 	AddPlugin( NAME ${PROJECT_NAME} )
 	
-	set( EIGEN_ROOT_DIR "" CACHE PATH "Eigen root (contains the Eigen directory)" )
+	set( EIGEN_ROOT_DIR "/usr")
 	if ( NOT EIGEN_ROOT_DIR )
 		message( SEND_ERROR "No Eigen root directory specified (EIGEN_ROOT_DIR)" )
 	endif()

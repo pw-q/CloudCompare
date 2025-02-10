@@ -257,35 +257,24 @@
                   </widget>
                  </item>
                  <item>
+                  <widget class="QCheckBox" name="decomposeClassificationCheckBox">
+                   <property name="toolTip">
+                    <string>If checked, the classification field will be decomposed into Classification, Synthetic, Key Point and Withheld</string>
+                   </property>
+                   <property name="text">
+                    <string>Decompose Classification</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
                   <widget class="QCheckBox" name="force8bitColorsCheckBox">
                    <property name="text">
                     <string>Force 8-bit colors</string>
                    </property>
                   </widget>
-                 </item>
-                 <item>
-                  <layout class="QHBoxLayout" name="timeShiftLayout">
-                   <item>
-                    <widget class="QCheckBox" name="automaticTimeShiftCheckBox">
-                     <property name="text">
-                      <string>Automatic GPS Time shift</string>
-                     </property>
-                     <property name="checked">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QDoubleSpinBox" name="manualTimeShiftSpinBox">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="maximum">
-                      <double>100000000.000000000000000</double>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
                  </item>
                 </layout>
                </widget>

@@ -1,4 +1,4 @@
-option( PLUGIN_STANDARD_QHPR "Install qHPR plugin" OFF )
+option( PLUGIN_STANDARD_QHPR "Install qHPR plugin" ON )
 
 if( PLUGIN_STANDARD_QHPR )
 	project( QHPR_PLUGIN )

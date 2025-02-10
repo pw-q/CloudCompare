@@ -1,4 +1,4 @@
-option( PLUGIN_GL_QEDL "Install qEDL plugin" OFF )
+option( PLUGIN_GL_QEDL "Install qEDL plugin" ON )
 
 if( PLUGIN_GL_QEDL )
 	project( QEDL_GL_PLUGIN )
