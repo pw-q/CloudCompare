@@ -194,8 +194,7 @@ MainWindow::MainWindow()
       m_plpDlg(nullptr), m_pprDlg(nullptr), m_pfDlg(nullptr) {
   m_UI->setupUi(this);
 
-  setWindowTitle(QStringLiteral("CloudCompare v") +
-                 ccApp->versionLongStr(false));
+  setWindowTitle(QStringLiteral("3DDynamic"));
 
   m_pluginUIManager = new ccPluginUIManager(this, this);
 
@@ -6393,8 +6392,8 @@ void MainWindow::doActionShowHelpDialog() {
 
 void MainWindow::freezeUI(bool state) {
   // freeze standard plugins
-  m_UI->toolBarMainTools->setDisabled(state);
-  m_UI->toolBarSFTools->setDisabled(state);
+  // m_UI->toolBarMainTools->setDisabled(state);
+  // m_UI->toolBarSFTools->setDisabled(state);
 
   m_pluginUIManager->mainPluginToolbar()->setDisabled(state);
 
@@ -11545,7 +11544,7 @@ void MainWindow::initWidget() {
   m_UI->actionEnterBubbleViewMode->setVisible(true);
   m_UI->actionEnableCameraLink->setVisible(false);
   m_UI->actionRenderToFile->setVisible(false);
-  m_UI->actionDisplaySettings->setVisible(false);
+  m_UI->actionDisplaySettings->setVisible(true);
   m_UI->actionEditCamera->setVisible(false);
   m_UI->actionRefresh->setVisible(true);
   m_UI->actionSaveViewportAsObject->setVisible(false);

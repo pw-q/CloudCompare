@@ -149,8 +149,9 @@ void ccPluginUIManager::init() {
   for (ccStdPluginInterface *plugin : coreStdPlugins) {
     QList<QAction *> actions = plugin->getActions();
 
-    addActionsToMenu(plugin, actions);
-    addActionsToToolBar(plugin, actions);
+    ///修改，关闭Plugins
+    // addActionsToMenu(plugin, actions);
+    // addActionsToToolBar(plugin, actions);
 
     plugin->onNewSelection(m_appInterface->getSelectedEntities());
   }
@@ -162,8 +163,9 @@ void ccPluginUIManager::init() {
     for (ccStdPluginInterface *plugin : thirdPartyStdPlugins) {
       QList<QAction *> actions = plugin->getActions();
 
-      addActionsToMenu(plugin, actions);
-      addActionsToToolBar(plugin, actions);
+      ///修改，关闭Plugins
+      // addActionsToMenu(plugin, actions);
+      // addActionsToToolBar(plugin, actions);
 
       plugin->onNewSelection(m_appInterface->getSelectedEntities());
     }
@@ -311,14 +313,14 @@ void ccPluginUIManager::addActionsToMenu(ccStdPluginInterface *stdPlugin,
 }
 
 void ccPluginUIManager::setupToolbars() {
-  m_mainPluginToolbar = new QToolBar(tr("Plugins"), m_parentWidget);
+  m_mainPluginToolbar = new QToolBar(tr("Plugins"), nullptr);
 
   m_mainPluginToolbar->setObjectName(QStringLiteral("Main Plugin Toolbar"));
 
   connect(m_showPluginToolbar, &QAction::toggled, m_mainPluginToolbar,
           &QToolBar::setVisible);
 
-  m_glFiltersToolbar = new QToolBar(tr("GL Filters"), m_parentWidget);
+  m_glFiltersToolbar = new QToolBar(tr("GL Filters"), nullptr);
 
   m_glFiltersToolbar->setObjectName(QStringLiteral("GL Plugin Toolbar"));
   m_glFiltersToolbar->addAction(m_actionRemoveFilter);

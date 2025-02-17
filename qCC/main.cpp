@@ -246,7 +246,7 @@ int main(int argc, char **argv) {
           "Failed to initialize the main application window?!");
       return EXIT_FAILURE;
     }
-    mainWindow->initPlugins();
+    // mainWindow->initPlugins();
     mainWindow->show();
     // mainWindow->initWidget();
     QCoreApplication::processEvents();
