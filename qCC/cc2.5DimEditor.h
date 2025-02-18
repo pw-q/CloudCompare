@@ -18,7 +18,7 @@
 #ifndef CC_2_5D_EDITOR_HEADER
 #define CC_2_5D_EDITOR_HEADER
 
-//qCC_db
+// qCC_db
 #include <ccRasterGrid.h>
 
 class ccBoundingBoxEditorDlg;
@@ -28,86 +28,80 @@ class QFrame;
 class QComboBox;
 
 //! 2.5D data editor (generic interface)
-class cc2Point5DimEditor
-{
+class cc2Point5DimEditor {
 public:
-	//! Default constructor
-	cc2Point5DimEditor();
+  //! Default constructor
+  cc2Point5DimEditor();
 
-	//! Destructor
-	virtual ~cc2Point5DimEditor();
+  //! Destructor
+  virtual ~cc2Point5DimEditor();
 
-protected: //standard methods
+protected: // standard methods
+  //! Returns projection grid step
+  virtual double getGridStep() const = 0;
 
-	//! Returns projection grid step
-	virtual double getGridStep() const = 0;
+  //! Returns projection dimension
+  /** \return dimension as int (0: X, 1: Y, 2:Z)
+   **/
+  virtual unsigned char getProjectionDimension() const = 0;
 
-	//! Returns projection dimension
-	/** \return dimension as int (0: X, 1: Y, 2:Z)
-	**/
-	virtual unsigned char getProjectionDimension() const = 0;
+  //! Returns type of projection
+  virtual ccRasterGrid::ProjectionType getTypeOfProjection() const = 0;
 
-	//! Returns type of projection
-	virtual ccRasterGrid::ProjectionType getTypeOfProjection() const = 0;
+  //! Returns custom bbox
+  virtual ccBBox getCustomBBox() const;
 
-	//! Returns custom bbox
-	virtual ccBBox getCustomBBox() const;
+  //! Declares whether the grid is up-to-date or not
+  virtual void gridIsUpToDate(bool state) = 0;
 
-	//! Declares whether the grid is up-to-date or not
-	virtual void gridIsUpToDate(bool state) = 0;
+  //! Updates the 2D display zoom
+  virtual void update2DDisplayZoom(ccBBox &box);
 
-	//! Updates the 2D display zoom
-	virtual void update2DDisplayZoom(ccBBox& box);
+protected: // raster grid related stuff
+  //! Show grid box editor and update
+  /** \return whether the box was modified or not
+   **/
+  virtual bool showGridBoxEditor();
 
-protected: //raster grid related stuff
+  //! Returns the grid size as a string
+  virtual QString getGridSizeAsString() const;
 
-	//! Show grid box editor and update 
-	/** \return whether the box was modified or not
-	**/
-	virtual bool showGridBoxEditor();
+  //! Returns the grid size
+  virtual bool getGridSize(unsigned &width, unsigned &height) const;
 
-	//! Returns the grid size as a string
-	virtual QString getGridSizeAsString() const;
+  //! Creates the bounding-box editor
+  void createBoundingBoxEditor(const ccBBox &gridBBox, QWidget *parent);
 
-	//! Returns the grid size
-	virtual bool getGridSize(unsigned& width, unsigned& height) const;
+  //! Creates the 2D view
+  void create2DView(QFrame *parentFrame);
 
-	//! Creates the bounding-box editor
-	void createBoundingBoxEditor(const ccBBox& gridBBox, QWidget* parent);
+  //! Returns the empty cell strategy (for a given combo-box)
+  ccRasterGrid::EmptyCellFillOption
+  getFillEmptyCellsStrategy(QComboBox *comboBox) const;
 
-	//! Creates the 2D view
-	void create2DView(QFrame* parentFrame);
+  //! Shortcut to ccRasterGrid::convertToCloud
+  ccPointCloud *convertGridToCloud(
+      bool exportHeightStats, bool exportSFStats,
+      const std::vector<ccRasterGrid::ExportableFields> &exportedStatistics,
+      bool projectSFs, bool projectColors, bool resampleInputCloudXY,
+      bool resampleInputCloudZ, // only considered if resampleInputCloudXY is
+                                // true!
+      ccGenericPointCloud *inputCloud, double percentileValue,
+      bool exportToOriginalCS, bool appendGridSizeToSFNames,
+      ccProgressDialog *progressDialog = nullptr) const;
 
-	//! Returns the empty cell strategy (for a given combo-box)
-	ccRasterGrid::EmptyCellFillOption getFillEmptyCellsStrategy(QComboBox* comboBox) const;
+protected: // members
+  //! Raster grid
+  ccRasterGrid m_grid;
 
-	//! Shortcut to ccRasterGrid::convertToCloud
-	ccPointCloud* convertGridToCloud(	bool exportHeightStats,
-										bool exportSFStats,
-										const std::vector<ccRasterGrid::ExportableFields>& exportedStatistics,
-										bool projectSFs,
-										bool projectColors,
-										bool resampleInputCloudXY,
-										bool resampleInputCloudZ, //only considered if resampleInputCloudXY is true!
-										ccGenericPointCloud* inputCloud,
-										double percentileValue,
-										bool exportToOriginalCS,
-										bool appendGridSizeToSFNames,
-										ccProgressDialog* progressDialog = nullptr) const;
+  //! Associated dialog
+  ccBoundingBoxEditorDlg *m_bbEditorDlg;
 
-protected: //members
+  //! 2D display
+  ccGLWindowInterface *m_glWindow;
 
-	//! Raster grid
-	ccRasterGrid m_grid;
-
-	//! Associated dialog
-	ccBoundingBoxEditorDlg* m_bbEditorDlg;
-
-	//! 2D display
-	ccGLWindowInterface* m_glWindow;
-
-	//! 'Raster' cloud
-	ccPointCloud* m_rasterCloud;
+  //! 'Raster' cloud
+  ccPointCloud *m_rasterCloud;
 };
 
-#endif //CC_2_5D_EDITOR_HEADER
+#endif // CC_2_5D_EDITOR_HEADER

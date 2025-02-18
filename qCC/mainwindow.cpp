@@ -194,7 +194,7 @@ MainWindow::MainWindow()
       m_plpDlg(nullptr), m_pprDlg(nullptr), m_pfDlg(nullptr) {
   m_UI->setupUi(this);
 
-  setWindowTitle(QStringLiteral("3DDynamic"));
+  setWindowTitle(QStringLiteral("CloudCompare v"));
 
   m_pluginUIManager = new ccPluginUIManager(this, this);
 
@@ -4812,8 +4812,8 @@ void MainWindow::doCompute2HalfDimVolume() {
     }
   }
 
-  ccVolumeCalcTool calcVolumeTool(cloud1, cloud2, this);
-  calcVolumeTool.exec();
+  ccVolumeCalcTool *calcVolumeTool = new ccVolumeCalcTool(cloud1, cloud2, this);
+  calcVolumeTool->show();
 }
 
 void MainWindow::doActionRasterize() {
