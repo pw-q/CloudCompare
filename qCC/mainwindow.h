@@ -423,6 +423,10 @@ private:
   void activateTracePolylineMode();
   void deactivateTracePolylineMode(bool);
 
+  // PolygonMesh tracing
+  void activateTracePolygonMeshMode();
+  void deactivateTracePolygonMeshMode(bool);
+
   // Section extraction
   void activateSectionExtractionMode();
   void deactivateSectionExtractionMode(bool);

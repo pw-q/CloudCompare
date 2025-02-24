@@ -738,6 +738,8 @@ void MainWindow::connectActions() {
           &MainWindow::activateSegmentationMode);
   connect(m_UI->actionTracePolyline, &QAction::triggered, this,
           &MainWindow::activateTracePolylineMode);
+  connect(m_UI->actionPolygonMesh, &QAction::triggered, this,
+          &MainWindow::activateTracePolygonMeshMode);
 
   connect(m_UI->actionCrop, &QAction::triggered, this,
           &MainWindow::doActionCrop);
@@ -6723,6 +6725,47 @@ void MainWindow::deactivateTracePolylineMode(bool) {
   }
 }
 
+void MainWindow::activateTracePolygonMeshMode() {
+  ccGLWindowInterface *win = getActiveGLWindow();
+  if (!win) {
+    return;
+  }
+
+  if (!m_tplTool) {
+    m_tplTool = new ccTracePolylineTool(m_pickingHub, this);
+    connect(m_tplTool, &ccOverlayDialog::processFinished, this,
+            &MainWindow::deactivateTracePolylineMode);
+    registerOverlayDialog(m_tplTool, Qt::TopRightCorner);
+  }
+
+  m_tplTool->linkWith(win);
+
+  freezeUI(true);
+  m_UI->toolBarView->setDisabled(false);
+
+  // we disable all other windows
+  disableAllBut(win);
+
+  if (!m_tplTool->start())
+    deactivateTracePolylineMode(false);
+  else
+    updateOverlayDialogsPlacement();
+}
+
+void MainWindow::deactivateTracePolygonMeshMode(bool) {
+  // we enable all GL windows
+  enableAll();
+
+  freezeUI(false);
+
+  updateUI();
+
+  ccGLWindowInterface *win = getActiveGLWindow();
+  if (win) {
+    win->redraw();
+  }
+}
+
 void MainWindow::activatePointListPickingMode() {
   ccGLWindowInterface *win = getActiveGLWindow();
   if (!win)
@@ -10701,6 +10744,7 @@ void MainWindow::enableUIItems(dbTreeSelectionInfo &selInfo) {
   // menuTools->setEnabled(atLeastOneEntity);
 
   m_UI->actionTracePolyline->setEnabled(!dbIsEmpty);
+  m_UI->actionPolygonMesh->setEnabled(!dbIsEmpty);
   m_UI->actionZoomAndCenter->setEnabled(atLeastOneEntity && activeWindow);
   m_UI->actionSave->setEnabled(atLeastOneEntity);
   m_UI->actionSaveProject->setEnabled(!dbIsEmpty);
@@ -11517,7 +11561,7 @@ void MainWindow::initWidget() {
   m_UI->actionLevel->setVisible(false);
   m_UI->actionPointPicking->setVisible(true);
   m_UI->actionPointListPicking->setVisible(false);
-  m_UI->actionTracePolyline->setVisible(false);
+  // m_UI->actionTracePolyline->setVisible(false);
 
   // Tool-Box
   m_UI->actionComputeKdTree->setVisible(false);
