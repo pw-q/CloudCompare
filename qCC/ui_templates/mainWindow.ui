@@ -512,7 +512,6 @@
      <property name="title">
       <string>Trace</string>
      </property>
-     <addaction name="actionPolygonMesh"/>
      <addaction name="actionTracePolyline"/>
     </widget>
     <addaction name="menuClean"/>

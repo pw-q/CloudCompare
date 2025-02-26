@@ -17,14 +17,14 @@
 //#                                                                        #
 //##########################################################################
 
-//Local
+// Local
 #include "ccOverlayDialog.h"
 #include "ccPickingListener.h"
 
-//qCC_db
+// qCC_db
 #include <ccGenericGLDisplay.h>
 
-//system
+// system
 #include <vector>
 
 class ccPolyline;
@@ -32,81 +32,82 @@ class ccPointCloud;
 class ccGLWindowInterface;
 class ccPickingHub;
 
-namespace Ui
-{
-	class TracePolyLineDlg;
+namespace Ui {
+class TracePolyLineDlg;
 }
 
 //! Graphical Polyline Tracing tool
-class ccTracePolylineTool : public ccOverlayDialog, public ccPickingListener
-{
-	Q_OBJECT
+class ccTracePolylineTool : public ccOverlayDialog, public ccPickingListener {
+  Q_OBJECT
 
 public:
-	//! Default constructor
-	explicit ccTracePolylineTool(ccPickingHub* pickingHub, QWidget* parent);
-	//! Destructor
-	virtual ~ccTracePolylineTool();
+  //! Default constructor
+  explicit ccTracePolylineTool(ccPickingHub *pickingHub, QWidget *parent);
+  //! Destructor
+  virtual ~ccTracePolylineTool();
 
-	//inherited from ccOverlayDialog
-	virtual bool linkWith(ccGLWindowInterface* win) override;
-	virtual bool start() override;
-	virtual void stop(bool accepted) override;
-
-protected:
-
-	void apply();
-	void cancel();
-	void exportLine();
-	inline void continueEdition()  { restart(false); }
-	inline void resetLine() { restart(true); }
-
-	void closePolyLine(int x = 0, int y = 0); //arguments for compatibility with ccGlWindow::rightButtonClicked signal
-	void updatePolyLineTip(int x, int y, Qt::MouseButtons buttons);
-
-	void onWidthSizeChanged(int);
-
-	//! To capture overridden shortcuts (pause button, etc.)
-	void onShortcutTriggered(int);
-
-	//! Inherited from ccPickingListener
-	virtual void onItemPicked(const PickedItem& pi) override;
+  // inherited from ccOverlayDialog
+  virtual bool linkWith(ccGLWindowInterface *win) override;
+  virtual bool start() override;
+  virtual void stop(bool accepted) override;
 
 protected:
+  void hidePara();
+  void apply();
+  void cancel();
+  void exportLine();
+  void slotTypeChanged(int index) { initTip(); }
+  inline void continueEdition() { restart(false); }
+  inline void resetLine() { restart(true); }
 
-	//! Restarts the edition mode
-	void restart(bool reset);
+  void closePolyLine(int x = 0,
+                     int y = 0); // arguments for compatibility with
+                                 // ccGlWindow::rightButtonClicked signal
+  void updatePolyLineTip(int x, int y, Qt::MouseButtons buttons);
 
-	//! Viewport parameters (used for picking)
-	struct SegmentGLParams
-	{
-		SegmentGLParams() {}
-		SegmentGLParams(ccGenericGLDisplay* display, int x, int y);
-		ccGLCameraParameters params;
-		CCVector2d clickPos;
-	};
+  void onWidthSizeChanged(int);
 
-	//! Oversamples the active 3D polyline
-	ccPolyline* polylineOverSampling(unsigned steps) const;
+  //! To capture overridden shortcuts (pause button, etc.)
+  void onShortcutTriggered(int);
 
-	//! 2D polyline (for the currently edited part)
-	ccPolyline* m_polyTip;
-	//! 2D polyline vertices
-	ccPointCloud* m_polyTipVertices;
+  //! Inherited from ccPickingListener
+  virtual void onItemPicked(const PickedItem &pi) override;
 
-	//! 3D polyline
-	ccPolyline* m_poly3D;
-	//! 3D polyline vertices
-	ccPointCloud* m_poly3DVertices;
+  void initTip();
 
-	//! Viewport parameters use to draw each segment of the polyline
-	std::vector<SegmentGLParams> m_segmentParams;
+protected:
+  //! Restarts the edition mode
+  void restart(bool reset);
 
-	//! Current process state
-	bool m_done;
+  //! Viewport parameters (used for picking)
+  struct SegmentGLParams {
+    SegmentGLParams() {}
+    SegmentGLParams(ccGenericGLDisplay *display, int x, int y);
+    ccGLCameraParameters params;
+    CCVector2d clickPos;
+  };
 
-	//! Picking hub
-	ccPickingHub* m_pickingHub;
+  //! Oversamples the active 3D polyline
+  ccPolyline *polylineOverSampling(unsigned steps) const;
 
-	Ui::TracePolyLineDlg* m_ui;
+  //! 2D polyline (for the currently edited part)
+  ccPolyline *m_polyTip;
+  //! 2D polyline vertices
+  ccPointCloud *m_polyTipVertices;
+
+  //! 3D polyline
+  ccPolyline *m_poly3D;
+  //! 3D polyline vertices
+  ccPointCloud *m_poly3DVertices;
+
+  //! Viewport parameters use to draw each segment of the polyline
+  std::vector<SegmentGLParams> m_segmentParams;
+
+  //! Current process state
+  bool m_done;
+
+  //! Picking hub
+  ccPickingHub *m_pickingHub;
+
+  Ui::TracePolyLineDlg *m_ui;
 };
