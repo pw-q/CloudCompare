@@ -51,6 +51,13 @@ public:
   virtual bool start() override;
   virtual void stop(bool accepted) override;
 
+  //   void controlType(bool bHide) {
+  //     hidePara();
+  //     // m_ui->comboType->setCurrentIndex(1);
+  //     // m_ui->label_4->setVisible(bHide);
+  //     // m_ui->comboType->setVisible(bHide);
+  //   }
+
 protected:
   void hidePara();
   void apply();

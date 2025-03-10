@@ -121,10 +121,13 @@ ccTracePolylineTool::~ccTracePolylineTool() {
 void ccTracePolylineTool::hidePara() {
   m_ui->widthSpinBox->setValue(1);
   m_ui->widthSpinBox->setVisible(false);
+  m_ui->label_3->setVisible(false);
   m_ui->oversampleSpinBox->setValue(1);
   m_ui->oversampleSpinBox->setVisible(false);
+  m_ui->label->setVisible(false);
   m_ui->snapSizeSpinBox->setValue(1);
   m_ui->snapSizeSpinBox->setVisible(false);
+  m_ui->label_2->setVisible(false);
 }
 
 void ccTracePolylineTool::onShortcutTriggered(int key) {

@@ -4785,34 +4785,58 @@ void MainWindow::doConvertPolylinesToMesh() {
 }
 
 void MainWindow::doCompute2HalfDimVolume() {
-  if (m_selectedEntities.empty() || m_selectedEntities.size() > 2) {
-    ccConsole::Error(tr("Select one or two point clouds!"));
+  if (m_selectedEntities.empty() || m_selectedEntities.size() > 3) {
+    ccConsole::Error(tr("请选择1-2个点云以及0-1个多边形!"));
     return;
   }
 
+  ccPolyline *edge = nullptr;
+
   ccGenericPointCloud *cloud1 = nullptr;
-  {
-    ccHObject *ent = m_selectedEntities.front();
-    if (!ent->isKindOf(CC_TYPES::POINT_CLOUD)) {
-      ccConsole::Error(tr("Select point clouds only!"));
-      return;
-    } else {
-      cloud1 = ccHObjectCaster::ToGenericPointCloud(ent);
-    }
-  }
 
   ccGenericPointCloud *cloud2 = nullptr;
-  if (m_selectedEntities.size() > 1) {
-    ccHObject *ent = m_selectedEntities[1];
-    if (!ent->isKindOf(CC_TYPES::POINT_CLOUD)) {
-      ccConsole::Error(tr("Select point clouds only!"));
-      return;
-    } else {
-      cloud2 = ccHObjectCaster::ToGenericPointCloud(ent);
+  {
+    ccHObject *ent = m_selectedEntities.front();
+    if (ent->isKindOf(CC_TYPES::POINT_CLOUD)) {
+      cloud1 = ccHObjectCaster::ToGenericPointCloud(ent);
+    } else if (ent->isKindOf(CC_TYPES::POLY_LINE)) {
+      edge = ccHObjectCaster::ToPolyline(ent);
     }
   }
 
-  ccVolumeCalcTool *calcVolumeTool = new ccVolumeCalcTool(cloud1, cloud2, this);
+  if (m_selectedEntities.size() > 1) {
+    ccHObject *ent = m_selectedEntities[1];
+    if (ent->isKindOf(CC_TYPES::POINT_CLOUD)) {
+      if (cloud1 == nullptr) {
+        cloud1 = ccHObjectCaster::ToGenericPointCloud(ent);
+      } else if (cloud2 == nullptr) {
+        cloud2 = ccHObjectCaster::ToGenericPointCloud(ent);
+      }
+    } else if (ent->isKindOf(CC_TYPES::POLY_LINE) && edge == nullptr) {
+      edge = ccHObjectCaster::ToPolyline(ent);
+    }
+  }
+
+  if (m_selectedEntities.size() > 2) {
+    ccHObject *ent = m_selectedEntities[2];
+    if (ent->isKindOf(CC_TYPES::POINT_CLOUD)) {
+      if (cloud1 == nullptr) {
+        cloud1 = ccHObjectCaster::ToGenericPointCloud(ent);
+      } else if (cloud2 == nullptr) {
+        cloud2 = ccHObjectCaster::ToGenericPointCloud(ent);
+      }
+    } else if (ent->isKindOf(CC_TYPES::POLY_LINE) && edge == nullptr) {
+      edge = ccHObjectCaster::ToPolyline(ent);
+    }
+  }
+
+  if (cloud1 == nullptr && cloud2 == nullptr) {
+    ccConsole::Error(tr("请至少选择一个点云!"));
+    return;
+  }
+
+  ccVolumeCalcTool *calcVolumeTool =
+      new ccVolumeCalcTool(cloud1, cloud2, edge, this);
   calcVolumeTool->show();
 }
 
@@ -10867,8 +10891,10 @@ void MainWindow::enableUIItems(dbTreeSelectionInfo &selInfo) {
   m_UI->actionExtractSections->setEnabled(atLeastOneCloud);
   m_UI->actionRasterize->setEnabled(exactlyOneCloud);
   m_UI->actionCompute2HalfDimVolume->setEnabled(
-      selInfo.cloudCount == selInfo.selCount && selInfo.cloudCount >= 1 &&
-      selInfo.cloudCount <= 2); // one or two clouds!
+      (selInfo.cloudCount == selInfo.selCount ||
+       (selInfo.cloudCount + 1 == selInfo.selCount &&
+        selInfo.polylineCount == 1)) &&
+      selInfo.cloudCount >= 1 && selInfo.cloudCount <= 2); // one or two clouds!
 
   m_UI->actionPointListPicking->setEnabled(exactlyOneCloud || exactlyOneMesh);
 
