@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                 CLOUDCOMPARE PLUGIN: qSTEPCADImport                    #
+//#                 ZOOMLION PLUGIN: qSTEPCADImport                    #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -19,17 +19,13 @@
 #include "../include/STEPFilter.h"
 
 qStepCADImport::qStepCADImport(QObject *parent)
-	: QObject(parent)
-	, ccIOPluginInterface(":/CC/plugin/qStepCADImport/info.json")
-{
+    : QObject(parent),
+      ccIOPluginInterface(":/CC/plugin/qStepCADImport/info.json") {}
+
+void qStepCADImport::registerCommands(ccCommandLineInterface *inCmdLine) {
+  Q_UNUSED(inCmdLine);
 }
 
-void qStepCADImport::registerCommands( ccCommandLineInterface *inCmdLine )
-{
-	Q_UNUSED( inCmdLine );
-}
-
-ccIOPluginInterface::FilterList qStepCADImport::getFilters()
-{
-	return { FileIOFilter::Shared( new STEPFilter ) };
+ccIOPluginInterface::FilterList qStepCADImport::getFilters() {
+  return {FileIOFilter::Shared(new STEPFilter)};
 }

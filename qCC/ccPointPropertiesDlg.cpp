@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,408 +17,387 @@
 
 #include "ccPointPropertiesDlg.h"
 
-//Local
+// Local
 #include "ccCommon.h"
 
-//qCC_gl
+// qCC_gl
 #include <ccGLWindowInterface.h>
 #include <ccGuiParameters.h>
 
-//qCC_db
+// qCC_db
+#include <cc2DLabel.h>
+#include <cc2DViewportLabel.h>
+#include <ccGenericMesh.h>
 #include <ccLog.h>
 #include <ccPointCloud.h>
-#include <ccGenericMesh.h>
-#include <cc2DViewportLabel.h>
-#include <cc2DLabel.h>
 
-//CCCoreLib
+// CCCoreLib
 #include <ScalarField.h>
 
-//Qt
+// Qt
 #include <QInputDialog>
 
-//System
+// System
 #include <assert.h>
 
-ccPointPropertiesDlg::ccPointPropertiesDlg(ccPickingHub* pickingHub, QWidget* parent)
-	: ccPointPickingGenericInterface(pickingHub, parent)
-	, Ui::PointPropertiesDlg()
-	, m_pickingMode(POINT_INFO)
-{
-	setupUi(this);
+ccPointPropertiesDlg::ccPointPropertiesDlg(ccPickingHub *pickingHub,
+                                           QWidget *parent)
+    : ccPointPickingGenericInterface(pickingHub, parent),
+      Ui::PointPropertiesDlg(), m_pickingMode(POINT_INFO) {
+  setupUi(this);
 
-	connect(closeButton,				&QToolButton::clicked, this, &ccPointPropertiesDlg::onClose);
-	connect(pointPropertiesButton,		&QToolButton::clicked, this, &ccPointPropertiesDlg::activatePointPropertiesDisplay);
-	connect(pointPointDistanceButton,	&QToolButton::clicked, this, &ccPointPropertiesDlg::activateDistanceDisplay);
-	connect(pointsAngleButton,			&QToolButton::clicked, this, &ccPointPropertiesDlg::activateAngleDisplay);
-	connect(rectZoneToolButton,			&QToolButton::clicked, this, &ccPointPropertiesDlg::activate2DZonePicking);
-	connect(saveLabelButton,			&QToolButton::clicked, this, &ccPointPropertiesDlg::exportCurrentLabel);
-	connect(razButton,					&QToolButton::clicked, this, &ccPointPropertiesDlg::initializeState);
+  connect(closeButton, &QToolButton::clicked, this,
+          &ccPointPropertiesDlg::onClose);
+  connect(pointPropertiesButton, &QToolButton::clicked, this,
+          &ccPointPropertiesDlg::activatePointPropertiesDisplay);
+  connect(pointPointDistanceButton, &QToolButton::clicked, this,
+          &ccPointPropertiesDlg::activateDistanceDisplay);
+  connect(pointsAngleButton, &QToolButton::clicked, this,
+          &ccPointPropertiesDlg::activateAngleDisplay);
+  connect(rectZoneToolButton, &QToolButton::clicked, this,
+          &ccPointPropertiesDlg::activate2DZonePicking);
+  connect(saveLabelButton, &QToolButton::clicked, this,
+          &ccPointPropertiesDlg::exportCurrentLabel);
+  connect(razButton, &QToolButton::clicked, this,
+          &ccPointPropertiesDlg::initializeState);
 
-	//for points picking
-	m_label = new cc2DLabel();
-	m_label->setSelected(true);
+  // for points picking
+  m_label = new cc2DLabel();
+  m_label->setSelected(true);
 
-	//for 2D zone picking
-	m_rect2DLabel = new cc2DViewportLabel();
-	m_rect2DLabel->setVisible(false);	//=invalid
-	m_rect2DLabel->setSelected(true);	//=closed
+  // for 2D zone picking
+  m_rect2DLabel = new cc2DViewportLabel();
+  m_rect2DLabel->setVisible(false); //=invalid
+  m_rect2DLabel->setSelected(true); //=closed
 }
 
-ccPointPropertiesDlg::~ccPointPropertiesDlg()
-{
-	if (m_label)
-		delete m_label;
-	m_label = nullptr;
+ccPointPropertiesDlg::~ccPointPropertiesDlg() {
+  if (m_label)
+    delete m_label;
+  m_label = nullptr;
 
-	if (m_rect2DLabel)
-		delete m_rect2DLabel;
-	m_rect2DLabel = nullptr;
+  if (m_rect2DLabel)
+    delete m_rect2DLabel;
+  m_rect2DLabel = nullptr;
 }
 
-bool ccPointPropertiesDlg::linkWith(ccGLWindowInterface* win)
-{
-	assert(m_label && m_rect2DLabel);
+bool ccPointPropertiesDlg::linkWith(ccGLWindowInterface *win) {
+  assert(m_label && m_rect2DLabel);
 
-	ccGLWindowInterface* oldWin = m_associatedWin;
+  ccGLWindowInterface *oldWin = m_associatedWin;
 
-	if (!ccPointPickingGenericInterface::linkWith(win))
-	{
-		return false;
-	}
+  if (!ccPointPickingGenericInterface::linkWith(win)) {
+    return false;
+  }
 
-	//old window?
-	if (oldWin)
-	{
-		oldWin->removeFromOwnDB(m_label);
-		oldWin->removeFromOwnDB(m_rect2DLabel);
-		oldWin->setInteractionMode(ccGLWindowInterface::MODE_TRANSFORM_CAMERA);
-		oldWin->signalEmitter()->disconnect(this);
-	}
+  // old window?
+  if (oldWin) {
+    oldWin->removeFromOwnDB(m_label);
+    oldWin->removeFromOwnDB(m_rect2DLabel);
+    oldWin->setInteractionMode(ccGLWindowInterface::MODE_TRANSFORM_CAMERA);
+    oldWin->signalEmitter()->disconnect(this);
+  }
 
-	m_rect2DLabel->setVisible(false);	//=invalid
-	m_rect2DLabel->setSelected(true);	//=closed
-	m_label->clear();
+  m_rect2DLabel->setVisible(false); //=invalid
+  m_rect2DLabel->setSelected(true); //=closed
+  m_label->clear();
 
-	//new window?
-	if (m_associatedWin)
-	{
-		m_associatedWin->addToOwnDB(m_label);
-		m_associatedWin->addToOwnDB(m_rect2DLabel);
-		connect(m_associatedWin->signalEmitter(), &ccGLWindowSignalEmitter::mouseMoved,			this, &ccPointPropertiesDlg::update2DZone);
-		connect(m_associatedWin->signalEmitter(), &ccGLWindowSignalEmitter::leftButtonClicked,	this, &ccPointPropertiesDlg::processClickedPoint);
-		connect(m_associatedWin->signalEmitter(), &ccGLWindowSignalEmitter::buttonReleased,		this, &ccPointPropertiesDlg::close2DZone);
-	}
+  // new window?
+  if (m_associatedWin) {
+    m_associatedWin->addToOwnDB(m_label);
+    m_associatedWin->addToOwnDB(m_rect2DLabel);
+    connect(m_associatedWin->signalEmitter(),
+            &ccGLWindowSignalEmitter::mouseMoved, this,
+            &ccPointPropertiesDlg::update2DZone);
+    connect(m_associatedWin->signalEmitter(),
+            &ccGLWindowSignalEmitter::leftButtonClicked, this,
+            &ccPointPropertiesDlg::processClickedPoint);
+    connect(m_associatedWin->signalEmitter(),
+            &ccGLWindowSignalEmitter::buttonReleased, this,
+            &ccPointPropertiesDlg::close2DZone);
+  }
 
-	return true;
+  return true;
 }
 
-bool ccPointPropertiesDlg::start()
-{
-	activatePointPropertiesDisplay();
+bool ccPointPropertiesDlg::start() {
+  activatePointPropertiesDisplay();
 
-	return ccPointPickingGenericInterface::start();
+  return ccPointPickingGenericInterface::start();
 }
 
-void ccPointPropertiesDlg::stop(bool state)
-{
-	assert(m_label && m_rect2DLabel);
+void ccPointPropertiesDlg::stop(bool state) {
+  assert(m_label && m_rect2DLabel);
 
-	m_label->clear();
-	m_rect2DLabel->setVisible(false);	//=invalid
-	m_rect2DLabel->setSelected(true);	//=closed
+  m_label->clear();
+  m_rect2DLabel->setVisible(false); //=invalid
+  m_rect2DLabel->setSelected(true); //=closed
 
-	if (m_associatedWin)
-		m_associatedWin->setInteractionMode(ccGLWindowInterface::MODE_TRANSFORM_CAMERA);
+  if (m_associatedWin)
+    m_associatedWin->setInteractionMode(
+        ccGLWindowInterface::MODE_TRANSFORM_CAMERA);
 
-	ccPointPickingGenericInterface::stop(state);
+  ccPointPickingGenericInterface::stop(state);
 }
 
-void ccPointPropertiesDlg::onClose()
-{
-	stop(false);
+void ccPointPropertiesDlg::onClose() { stop(false); }
+
+void ccPointPropertiesDlg::activatePointPropertiesDisplay() {
+  if (m_associatedWin)
+    m_associatedWin->setInteractionMode(
+        ccGLWindowInterface::MODE_TRANSFORM_CAMERA);
+
+  m_pickingMode = POINT_INFO;
+  pointPropertiesButton->setDown(true);
+  pointPointDistanceButton->setDown(false);
+  pointsAngleButton->setDown(false);
+  rectZoneToolButton->setDown(false);
+  m_label->setVisible(true);
+  m_rect2DLabel->setVisible(false);
 }
 
-void ccPointPropertiesDlg::activatePointPropertiesDisplay()
-{
-	if (m_associatedWin)
-		m_associatedWin->setInteractionMode(ccGLWindowInterface::MODE_TRANSFORM_CAMERA);
+void ccPointPropertiesDlg::activateDistanceDisplay() {
+  m_pickingMode = POINT_POINT_DISTANCE;
+  pointPropertiesButton->setDown(false);
+  pointPointDistanceButton->setDown(true);
+  pointsAngleButton->setDown(false);
+  rectZoneToolButton->setDown(false);
+  m_label->setVisible(true);
+  m_rect2DLabel->setVisible(false);
 
-	m_pickingMode = POINT_INFO;
-	pointPropertiesButton->setDown(true);
-	pointPointDistanceButton->setDown(false);
-	pointsAngleButton->setDown(false);
-	rectZoneToolButton->setDown(false);
-	m_label->setVisible(true);
-	m_rect2DLabel->setVisible(false);
+  if (m_associatedWin) {
+    m_associatedWin->setInteractionMode(
+        ccGLWindowInterface::MODE_TRANSFORM_CAMERA);
+    m_associatedWin->redraw(false);
+  }
 }
 
-void ccPointPropertiesDlg::activateDistanceDisplay()
-{
-	m_pickingMode = POINT_POINT_DISTANCE;
-	pointPropertiesButton->setDown(false);
-	pointPointDistanceButton->setDown(true);
-	pointsAngleButton->setDown(false);
-	rectZoneToolButton->setDown(false);
-	m_label->setVisible(true);
-	m_rect2DLabel->setVisible(false);
+void ccPointPropertiesDlg::activateAngleDisplay() {
+  m_pickingMode = POINTS_ANGLE;
+  pointPropertiesButton->setDown(false);
+  pointPointDistanceButton->setDown(false);
+  pointsAngleButton->setDown(true);
+  rectZoneToolButton->setDown(false);
+  m_label->setVisible(true);
+  m_rect2DLabel->setVisible(false);
 
-	if (m_associatedWin)
-	{
-		m_associatedWin->setInteractionMode(ccGLWindowInterface::MODE_TRANSFORM_CAMERA);
-		m_associatedWin->redraw(false);
-	}
+  if (m_associatedWin) {
+    m_associatedWin->setInteractionMode(
+        ccGLWindowInterface::MODE_TRANSFORM_CAMERA);
+    m_associatedWin->redraw(false);
+  }
 }
 
-void ccPointPropertiesDlg::activateAngleDisplay()
-{
-	m_pickingMode = POINTS_ANGLE;
-	pointPropertiesButton->setDown(false);
-	pointPointDistanceButton->setDown(false);
-	pointsAngleButton->setDown(true);
-	rectZoneToolButton->setDown(false);
-	m_label->setVisible(true);
-	m_rect2DLabel->setVisible(false);
+void ccPointPropertiesDlg::activate2DZonePicking() {
+  m_pickingMode = RECT_ZONE;
+  pointPropertiesButton->setDown(false);
+  pointPointDistanceButton->setDown(false);
+  pointsAngleButton->setDown(false);
+  rectZoneToolButton->setDown(true);
+  m_label->setVisible(false);
+  // m_rect2DLabel->setVisible(false);
 
-	if (m_associatedWin)
-	{
-		m_associatedWin->setInteractionMode(ccGLWindowInterface::MODE_TRANSFORM_CAMERA);
-		m_associatedWin->redraw(false);
-	}
+  if (m_associatedWin) {
+    m_associatedWin->setInteractionMode(
+        ccGLWindowInterface::INTERACT_SEND_ALL_SIGNALS);
+    m_associatedWin->redraw(false);
+  }
 }
 
-void ccPointPropertiesDlg::activate2DZonePicking()
-{
-	m_pickingMode = RECT_ZONE;
-	pointPropertiesButton->setDown(false);
-	pointPointDistanceButton->setDown(false);
-	pointsAngleButton->setDown(false);
-	rectZoneToolButton->setDown(true);
-	m_label->setVisible(false);
-	//m_rect2DLabel->setVisible(false);
+void ccPointPropertiesDlg::initializeState() {
+  assert(m_label && m_rect2DLabel);
+  m_label->clear();
+  m_rect2DLabel->setVisible(false); //=invalid
+  m_rect2DLabel->setSelected(true); //=closed
 
-	if (m_associatedWin)
-	{
-		m_associatedWin->setInteractionMode(ccGLWindowInterface::INTERACT_SEND_ALL_SIGNALS);
-		m_associatedWin->redraw(false);
-	}
+  if (m_associatedWin)
+    m_associatedWin->redraw(false);
 }
 
-void ccPointPropertiesDlg::initializeState()
-{
-	assert(m_label && m_rect2DLabel);
-	m_label->clear();
-	m_rect2DLabel->setVisible(false);	//=invalid
-	m_rect2DLabel->setSelected(true);	//=closed
+void ccPointPropertiesDlg::exportCurrentLabel() {
+  ccHObject *labelObject = nullptr;
+  if (m_pickingMode == RECT_ZONE)
+    labelObject = (m_rect2DLabel->isSelected() && m_rect2DLabel->isVisible()
+                       ? m_rect2DLabel
+                       : nullptr);
+  else
+    labelObject = (m_label && m_label->size() > 0 ? m_label : nullptr);
 
-	if (m_associatedWin)
-		m_associatedWin->redraw(false);
+  if (!labelObject) {
+    return;
+  }
+
+  // detach current label from window
+  if (m_associatedWin)
+    m_associatedWin->removeFromOwnDB(labelObject);
+  labelObject->setSelected(false);
+
+  ccHObject *newLabelObject = nullptr;
+  if (m_pickingMode == RECT_ZONE) {
+    // if (m_associatedWin)
+    //	m_rect2DLabel->setParameters(m_associatedWin->getViewportParameters());
+    newLabelObject = m_rect2DLabel = new cc2DViewportLabel();
+    m_rect2DLabel->setVisible(false); //=invalid
+    m_rect2DLabel->setSelected(true); //=closed
+  } else {
+    // attach old label to first point cloud by default
+    m_label->getPickedPoint(0).entity()->addChild(labelObject);
+    newLabelObject = m_label = new cc2DLabel();
+    m_label->setSelected(true);
+  }
+
+  Q_EMIT newLabel(labelObject);
+
+  if (m_associatedWin) {
+    m_associatedWin->addToOwnDB(newLabelObject);
+    m_associatedWin->redraw(true, false);
+  }
 }
 
-void ccPointPropertiesDlg::exportCurrentLabel()
-{
-	ccHObject* labelObject = nullptr;
-	if (m_pickingMode == RECT_ZONE)
-		labelObject = (m_rect2DLabel->isSelected() && m_rect2DLabel->isVisible() ? m_rect2DLabel : nullptr);
-	else
-		labelObject = (m_label && m_label->size() > 0 ? m_label : nullptr);
-	
-	if (!labelObject)
-	{
-		return;
-	}
+void ccPointPropertiesDlg::processPickedPoint(const PickedItem &picked) {
+  assert(picked.entity);
+  assert(m_label);
+  assert(m_associatedWin);
 
-	//detach current label from window
-	if (m_associatedWin)
-		m_associatedWin->removeFromOwnDB(labelObject);
-	labelObject->setSelected(false);
+  switch (m_pickingMode) {
+  case POINT_INFO:
+    m_label->clear();
+    break;
+  case POINT_POINT_DISTANCE:
+    if (m_label->size() >= 2)
+      m_label->clear();
+    break;
+  case POINTS_ANGLE:
+    if (m_label->size() >= 3)
+      m_label->clear();
+    break;
+  case RECT_ZONE:
+    return; // we don't use this slot for 2D mode
+  }
 
-	ccHObject* newLabelObject = nullptr;
-	if (m_pickingMode == RECT_ZONE)
-	{
-		//if (m_associatedWin)
-		//	m_rect2DLabel->setParameters(m_associatedWin->getViewportParameters());
-		newLabelObject = m_rect2DLabel = new cc2DViewportLabel();
-		m_rect2DLabel->setVisible(false);	//=invalid
-		m_rect2DLabel->setSelected(true);	//=closed
-	}
-	else
-	{
-		//attach old label to first point cloud by default
-		m_label->getPickedPoint(0).entity()->addChild(labelObject);
-		newLabelObject = m_label = new cc2DLabel();
-		m_label->setSelected(true);
-	}
+  if (picked.entity->isKindOf(CC_TYPES::POINT_CLOUD)) {
+    m_label->addPickedPoint(static_cast<ccGenericPointCloud *>(picked.entity),
+                            picked.itemIndex, picked.entityCenter);
+  } else if (picked.entity->isKindOf(CC_TYPES::MESH)) {
+    m_label->addPickedPoint(
+        static_cast<ccGenericMesh *>(picked.entity), picked.itemIndex,
+        CCVector2d(picked.uvw.x, picked.uvw.y), picked.entityCenter);
+  } else {
+    assert(false);
+    return;
+  }
 
-	Q_EMIT newLabel(labelObject);
+  m_label->setVisible(true);
+  m_label->displayPointLegend(
+      m_label->size() ==
+      3); // we need to display 'A', 'B' and 'C' for 3-points labels
+  if (m_label->size() == 1 && m_associatedWin) {
+    m_label->setPosition(static_cast<float>(picked.clickPoint.x() + 20) /
+                             m_associatedWin->glWidth(),
+                         static_cast<float>(picked.clickPoint.y() + 20) /
+                             m_associatedWin->glHeight());
+  }
 
-	if (m_associatedWin)
-	{
-		m_associatedWin->addToOwnDB(newLabelObject);
-		m_associatedWin->redraw(true, false);
-	}	
+  // output info to Console
+  QStringList body =
+      m_label->getLabelContent(ccGui::Parameters().displayedNumPrecision);
+  ccLog::Print(QString("[Picked] ") + m_label->getName());
+  for (QString &row : body) {
+    ccLog::Print(QString("[Picked]\t- ") + row);
+  }
+
+  if (m_associatedWin) {
+    m_associatedWin->redraw();
+  }
 }
 
-void ccPointPropertiesDlg::processPickedPoint(const PickedItem& picked)
-{
-	assert(picked.entity);
-	assert(m_label);
-	assert(m_associatedWin);
+void ccPointPropertiesDlg::processClickedPoint(int x, int y) {
+  if (m_pickingMode != RECT_ZONE) {
+    return;
+  }
 
-	switch (m_pickingMode)
-	{
-	case POINT_INFO:
-		m_label->clear();
-		break;
-	case POINT_POINT_DISTANCE:
-		if (m_label->size() >= 2)
-			m_label->clear();
-		break;
-	case POINTS_ANGLE:
-		if (m_label->size() >= 3)
-			m_label->clear();
-		break;
-	case RECT_ZONE:
-		return; //we don't use this slot for 2D mode
-	}
+  if (!m_rect2DLabel || !m_associatedWin) {
+    assert(false);
+    return;
+  }
 
-	if (picked.entity->isKindOf(CC_TYPES::POINT_CLOUD))
-	{
-		m_label->addPickedPoint(static_cast<ccGenericPointCloud*>(picked.entity), picked.itemIndex, picked.entityCenter);
-	}
-	else if (picked.entity->isKindOf(CC_TYPES::MESH))
-	{
-		m_label->addPickedPoint(static_cast<ccGenericMesh*>(picked.entity), picked.itemIndex, CCVector2d(picked.uvw.x, picked.uvw.y), picked.entityCenter);
-	}
-	else
-	{
-		assert(false);
-		return;
-	}
-	
-	m_label->setVisible(true);
-	m_label->displayPointLegend(m_label->size() == 3); //we need to display 'A', 'B' and 'C' for 3-points labels
-	if (m_label->size() == 1 && m_associatedWin)
-	{
-		m_label->setPosition(static_cast<float>(picked.clickPoint.x() + 20) / m_associatedWin->glWidth(), static_cast<float>(picked.clickPoint.y() + 20) / m_associatedWin->glHeight());
-	}
+  QPointF pos2D = m_associatedWin->toCenteredGLCoordinates(x, y);
 
-	//output info to Console
-	QStringList body = m_label->getLabelContent(ccGui::Parameters().displayedNumPrecision);
-	ccLog::Print(QString("[Picked] ") + m_label->getName());
-	for (QString& row : body)
-	{
-		ccLog::Print(QString("[Picked]\t- ") + row);
-	}
+  if (m_rect2DLabel->isSelected()) // already closed? we start a new label
+  {
+    cc2DViewportLabel::ROI roi{static_cast<float>(pos2D.x()),
+                               static_cast<float>(pos2D.y()), 0.0f, 0.0f};
 
-	if (m_associatedWin)
-	{
-		m_associatedWin->redraw();
-	}
+    if (m_associatedWin) {
+      m_rect2DLabel->setParameters(m_associatedWin->getViewportParameters());
+    }
+    m_rect2DLabel->setVisible(false);  //=invalid
+    m_rect2DLabel->setSelected(false); //=not closed
+    m_rect2DLabel->setRoi(roi);
+    m_rect2DLabel->setName(QString()); // reset name before display!
+  } else                               // we close the existing one
+  {
+    cc2DViewportLabel::ROI roi{m_rect2DLabel->roi()[0], m_rect2DLabel->roi()[1],
+                               static_cast<float>(pos2D.x()),
+                               static_cast<float>(pos2D.y())};
+    m_rect2DLabel->setRoi(roi);
+    m_rect2DLabel->setVisible(true);  //=valid
+    m_rect2DLabel->setSelected(true); //=closed
+  }
+
+  if (m_associatedWin) {
+    m_associatedWin->redraw(true, false);
+  }
 }
 
-void ccPointPropertiesDlg::processClickedPoint(int x, int y)
-{
-	if (m_pickingMode != RECT_ZONE)
-	{
-		return;
-	}
+void ccPointPropertiesDlg::update2DZone(int x, int y,
+                                        Qt::MouseButtons buttons) {
+  if (m_pickingMode != RECT_ZONE) {
+    return;
+  }
 
-	if (!m_rect2DLabel || !m_associatedWin)
-	{
-		assert(false);
-		return;
-	}
+  if (m_rect2DLabel->isSelected()) {
+    return;
+  }
 
-	QPointF pos2D = m_associatedWin->toCenteredGLCoordinates(x, y);
+  if (!m_associatedWin) {
+    assert(false);
+    return;
+  }
 
-	if (m_rect2DLabel->isSelected()) //already closed? we start a new label
-	{
-		cc2DViewportLabel::ROI roi{	static_cast<float>(pos2D.x()),
-									static_cast<float>(pos2D.y()),
-									0.0f,
-									0.0f};
+  QPointF pos2D = m_associatedWin->toCenteredGLCoordinates(x, y);
 
-		if (m_associatedWin)
-		{
-			m_rect2DLabel->setParameters(m_associatedWin->getViewportParameters());
-		}
-		m_rect2DLabel->setVisible(false);	//=invalid
-		m_rect2DLabel->setSelected(false);	//=not closed
-		m_rect2DLabel->setRoi(roi);
-		m_rect2DLabel->setName(QString()); //reset name before display!
-	}
-	else //we close the existing one
-	{
-		cc2DViewportLabel::ROI roi {m_rect2DLabel->roi()[0],
-									m_rect2DLabel->roi()[1],
-									static_cast<float>(pos2D.x()),
-									static_cast<float>(pos2D.y()) };
-		m_rect2DLabel->setRoi(roi);
-		m_rect2DLabel->setVisible(true);	//=valid
-		m_rect2DLabel->setSelected(true);	//=closed
-	}
+  cc2DViewportLabel::ROI roi{m_rect2DLabel->roi()[0], m_rect2DLabel->roi()[1],
+                             static_cast<float>(pos2D.x()),
+                             static_cast<float>(pos2D.y())};
+  m_rect2DLabel->setRoi(roi);
+  m_rect2DLabel->setVisible(true);
 
-	if (m_associatedWin)
-	{
-		m_associatedWin->redraw(true, false);
-	}
-}
-
-void ccPointPropertiesDlg::update2DZone(int x, int y, Qt::MouseButtons buttons)
-{
-	if (m_pickingMode != RECT_ZONE)
-	{
-		return;
-	}
-
-	if (m_rect2DLabel->isSelected())
-	{
-		return;
-	}
-
-	if (!m_associatedWin)
-	{
-		assert(false);
-		return;
-	}
-
-	QPointF pos2D = m_associatedWin->toCenteredGLCoordinates(x, y);
-
-	cc2DViewportLabel::ROI roi {m_rect2DLabel->roi()[0],
-								m_rect2DLabel->roi()[1],
-								static_cast<float>(pos2D.x()),
-								static_cast<float>(pos2D.y()) };
-	m_rect2DLabel->setRoi(roi);
-	m_rect2DLabel->setVisible(true);
-
-	m_associatedWin->redraw(true, false);
+  m_associatedWin->redraw(true, false);
 }
 
 static QString s_last2DLabelComment;
 
-void ccPointPropertiesDlg::close2DZone()
-{
-	if (m_pickingMode != RECT_ZONE)
-		return;
+void ccPointPropertiesDlg::close2DZone() {
+  if (m_pickingMode != RECT_ZONE)
+    return;
 
-	if (m_rect2DLabel->isSelected() || !m_rect2DLabel->isVisible())
-		return;
+  if (m_rect2DLabel->isSelected() || !m_rect2DLabel->isVisible())
+    return;
 
-	m_rect2DLabel->setSelected(true);
+  m_rect2DLabel->setSelected(true);
 
-	bool ok;
-	QString title = QInputDialog::getText(this, "Set area label title", "Title:", QLineEdit::Normal, s_last2DLabelComment, &ok);
-	if (!ok)
-	{
-		m_rect2DLabel->setVisible(false);
-	}
-	else
-	{
-		m_rect2DLabel->setName(title);
-		s_last2DLabelComment = title;
-	}
+  bool ok;
+  QString title = QInputDialog::getText(this, "Set area label title",
+                                        "Title:", QLineEdit::Normal,
+                                        s_last2DLabelComment, &ok);
+  if (!ok) {
+    m_rect2DLabel->setVisible(false);
+  } else {
+    m_rect2DLabel->setName(title);
+    s_last2DLabelComment = title;
+  }
 
-	if (m_associatedWin)
-		m_associatedWin->redraw(true, false);
+  if (m_associatedWin)
+    m_associatedWin->redraw(true, false);
 }

@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,116 +17,100 @@
 
 #include "ccSectionExtractionSubDlg.h"
 
-//system
+// system
 #include <assert.h>
 
-ccSectionExtractionSubDlg::ccSectionExtractionSubDlg(QWidget* parent/*=nullptr*/)
-	: QDialog(parent, Qt::Tool)
-	, Ui::SectionExtractionSubDlg()
-{
-	setupUi(this);
+ccSectionExtractionSubDlg::ccSectionExtractionSubDlg(
+    QWidget *parent /*=nullptr*/)
+    : QDialog(parent, Qt::Tool), Ui::SectionExtractionSubDlg() {
+  setupUi(this);
 }
 
-void ccSectionExtractionSubDlg::setActiveSectionCount(int count)
-{
-	activeSectionsLabel->setText(QString::number(count));
+void ccSectionExtractionSubDlg::setActiveSectionCount(int count) {
+  activeSectionsLabel->setText(QString::number(count));
 }
 
-void ccSectionExtractionSubDlg::setSectionThickness(double t)
-{
-	thicknessDoubleSpinBox->setValue(t);
+void ccSectionExtractionSubDlg::setSectionThickness(double t) {
+  thicknessDoubleSpinBox->setValue(t);
 }
 
-double ccSectionExtractionSubDlg::getSectionThickness() const
-{
-	return thicknessDoubleSpinBox->value();
+double ccSectionExtractionSubDlg::getSectionThickness() const {
+  return thicknessDoubleSpinBox->value();
 }
 
-double ccSectionExtractionSubDlg::getMaxEdgeLength() const
-{
-	return maxEdgeLengthDoubleSpinBox->value();
+double ccSectionExtractionSubDlg::getMaxEdgeLength() const {
+  return maxEdgeLengthDoubleSpinBox->value();
 }
 
-void ccSectionExtractionSubDlg::setMaxEdgeLength(double l)
-{
-	maxEdgeLengthDoubleSpinBox->setValue(l);
+void ccSectionExtractionSubDlg::setMaxEdgeLength(double l) {
+  maxEdgeLengthDoubleSpinBox->setValue(l);
 }
 
-bool ccSectionExtractionSubDlg::extractClouds() const
-{
-	return extractCloudsGroupBox->isChecked();
+bool ccSectionExtractionSubDlg::extractClouds() const {
+  return extractCloudsGroupBox->isChecked();
 }
 
-void ccSectionExtractionSubDlg::doExtractClouds(bool state)
-{
-	extractCloudsGroupBox->setChecked(state);
+void ccSectionExtractionSubDlg::doExtractClouds(bool state) {
+  extractCloudsGroupBox->setChecked(state);
 }
 
-bool ccSectionExtractionSubDlg::extractEnvelopes() const
-{
-	return extractEnvelopesGroupBox->isChecked();
+bool ccSectionExtractionSubDlg::extractEnvelopes() const {
+  return extractEnvelopesGroupBox->isChecked();
 }
 
-void ccSectionExtractionSubDlg::doExtractEnvelopes(bool state, ccEnvelopeExtractor::EnvelopeType type)
-{
-	extractEnvelopesGroupBox->setChecked(state);
+void ccSectionExtractionSubDlg::doExtractEnvelopes(
+    bool state, ccEnvelopeExtractor::EnvelopeType type) {
+  extractEnvelopesGroupBox->setChecked(state);
 
-	switch(type)
-	{
-	case ccEnvelopeExtractor::LOWER:
-		envelopeTypeComboBox->setCurrentIndex(0);
-		break;
-	case ccEnvelopeExtractor::UPPER:
-		envelopeTypeComboBox->setCurrentIndex(1);
-		break;
-	case ccEnvelopeExtractor::FULL:
-		envelopeTypeComboBox->setCurrentIndex(2);
-		break;
-	default:
-		assert(false);
-		break;
-	}
+  switch (type) {
+  case ccEnvelopeExtractor::LOWER:
+    envelopeTypeComboBox->setCurrentIndex(0);
+    break;
+  case ccEnvelopeExtractor::UPPER:
+    envelopeTypeComboBox->setCurrentIndex(1);
+    break;
+  case ccEnvelopeExtractor::FULL:
+    envelopeTypeComboBox->setCurrentIndex(2);
+    break;
+  default:
+    assert(false);
+    break;
+  }
 }
 
-bool ccSectionExtractionSubDlg::splitEnvelopes() const
-{
-	return splitEnvelopeCheckBox->isChecked();
+bool ccSectionExtractionSubDlg::splitEnvelopes() const {
+  return splitEnvelopeCheckBox->isChecked();
 }
 
-void ccSectionExtractionSubDlg::doSplitEnvelopes(bool state)
-{
-	splitEnvelopeCheckBox->setChecked(state);
+void ccSectionExtractionSubDlg::doSplitEnvelopes(bool state) {
+  splitEnvelopeCheckBox->setChecked(state);
 }
 
-bool ccSectionExtractionSubDlg::useMultiPass() const
-{
-	return multiPassCheckBox->isChecked();
+bool ccSectionExtractionSubDlg::useMultiPass() const {
+  return multiPassCheckBox->isChecked();
 }
 
-void ccSectionExtractionSubDlg::doUseMultiPass(bool state)
-{
-	multiPassCheckBox->setChecked(state);
+void ccSectionExtractionSubDlg::doUseMultiPass(bool state) {
+  multiPassCheckBox->setChecked(state);
 }
 
-ccEnvelopeExtractor::EnvelopeType ccSectionExtractionSubDlg::getEnvelopeType() const
-{
-	switch(envelopeTypeComboBox->currentIndex())
-	{
-	case 0:
-		return ccEnvelopeExtractor::LOWER;
-	case 1:
-		return ccEnvelopeExtractor::UPPER;
-	case 2:
-		return ccEnvelopeExtractor::FULL;
-	default:
-		assert(false);
-		break;
-	}
+ccEnvelopeExtractor::EnvelopeType
+ccSectionExtractionSubDlg::getEnvelopeType() const {
+  switch (envelopeTypeComboBox->currentIndex()) {
+  case 0:
+    return ccEnvelopeExtractor::LOWER;
+  case 1:
+    return ccEnvelopeExtractor::UPPER;
+  case 2:
+    return ccEnvelopeExtractor::FULL;
+  default:
+    assert(false);
+    break;
+  }
 
-	return ccEnvelopeExtractor::FULL;
+  return ccEnvelopeExtractor::FULL;
 }
 
-bool ccSectionExtractionSubDlg::visualDebugMode() const
-{
-	return debugModeCheckBox->isChecked();
+bool ccSectionExtractionSubDlg::visualDebugMode() const {
+  return debugModeCheckBox->isChecked();
 }

@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -194,7 +194,7 @@ MainWindow::MainWindow()
       m_plpDlg(nullptr), m_pprDlg(nullptr), m_pfDlg(nullptr) {
   m_UI->setupUi(this);
 
-  setWindowTitle(QStringLiteral("CloudCompare v"));
+  setWindowTitle(QStringLiteral("三维重建算法平台"));
 
   m_pluginUIManager = new ccPluginUIManager(this, this);
 
@@ -328,7 +328,7 @@ ccConsole::Print(
 
 initWidget();
 
-ccConsole::Print(tr("CloudCompare started!"));
+// ccConsole::Print(tr("!"));
 }
 
 MainWindow::~MainWindow() {
@@ -6133,9 +6133,7 @@ void MainWindow::doActionResetGUIElementsPos() {
   settings.remove(ccPS::MainWinGeom());
   settings.remove(ccPS::MainWinState());
 
-  QMessageBox::information(this, tr("Restart"),
-                           tr("To finish the process, you'll have to close and "
-                              "restart CloudCompare"));
+  QMessageBox::information(this, tr("Restart"), tr("请关闭重启软件"));
 
   // to avoid saving them right away!
   s_autoSaveGuiElementPos = false;
@@ -6408,8 +6406,8 @@ void MainWindow::doActionShowHelpDialog() {
   QMessageBox messageBox;
   messageBox.setTextFormat(Qt::RichText);
   messageBox.setWindowTitle("Documentation");
-  messageBox.setText("Please look at the <a "
-                     "href='http://www.cloudcompare.org/doc/wiki'>wiki</a>");
+  // messageBox.setText("Please look at the <a "
+  //                    "href='http://www.cloudcompare.org/doc/wiki'>wiki</a>");
   messageBox.setStandardButtons(QMessageBox::Ok);
   messageBox.exec();
 }
@@ -10340,10 +10338,7 @@ void MainWindow::doActionSaveFile() {
     if (0 != fileVersion) {
       QString minCCVersion =
           ccApplication::GetMinCCVersionForFileVersion(fileVersion);
-      ccLog::Print(
-          QString(
-              "This file can be loaded by CloudCompare version %1 and later")
-              .arg(minCCVersion));
+      ccLog::Print(QString("文件导入最低需要版本： %1").arg(minCCVersion));
     }
   }
 
@@ -10440,10 +10435,7 @@ void MainWindow::doActionSaveProject() {
     if (0 != fileVersion) {
       QString minCCVersion =
           ccApplication::GetMinCCVersionForFileVersion(fileVersion);
-      ccLog::Print(
-          QString(
-              "This file can be loaded by CloudCompare version %1 and later")
-              .arg(minCCVersion));
+      ccLog::Print(QString("文件导入最低需要版本： %1").arg(minCCVersion));
     }
   }
 

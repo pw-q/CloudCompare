@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                     CLOUDCOMPARE PLUGIN: qFacets                       #
+//#                     ZOOMLION PLUGIN: qFacets                       #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,43 +17,41 @@
 
 #include "facetsExportDlg.h"
 
-//Qt
+// Qt
 #include <QFileDialog>
 
-//System
+// System
 #include <assert.h>
 
-FacetsExportDlg::FacetsExportDlg(IOMode mode, QWidget* parent)
-	: QDialog(parent, Qt::Tool)
-	, Ui::FacetsExportDlg()
-	, m_mode(mode)
-{
-	setupUi(this);
+FacetsExportDlg::FacetsExportDlg(IOMode mode, QWidget *parent)
+    : QDialog(parent, Qt::Tool), Ui::FacetsExportDlg(), m_mode(mode) {
+  setupUi(this);
 
-	connect(browseToolButton, &QAbstractButton::clicked, this, &FacetsExportDlg::browseDestination);
+  connect(browseToolButton, &QAbstractButton::clicked, this,
+          &FacetsExportDlg::browseDestination);
 }
 
-void FacetsExportDlg::browseDestination()
-{
-	QString saveFileFilter;
-	switch(m_mode)
-	{
-	case SHAPE_FILE_IO:
-		saveFileFilter = "Shapefile (*.shp)";
-		break;
-	case ASCII_FILE_IO:
-		saveFileFilter = "ASCII table (*.csv)";
-		break;
-	default:
-		assert(false);
-		return;
-	}
+void FacetsExportDlg::browseDestination() {
+  QString saveFileFilter;
+  switch (m_mode) {
+  case SHAPE_FILE_IO:
+    saveFileFilter = "Shapefile (*.shp)";
+    break;
+  case ASCII_FILE_IO:
+    saveFileFilter = "ASCII table (*.csv)";
+    break;
+  default:
+    assert(false);
+    return;
+  }
 
-	//open file saving dialog
-	QString outputFilename = QFileDialog::getSaveFileName(nullptr, "Select destination", destinationPathLineEdit->text(), saveFileFilter);
+  // open file saving dialog
+  QString outputFilename = QFileDialog::getSaveFileName(
+      nullptr, "Select destination", destinationPathLineEdit->text(),
+      saveFileFilter);
 
-	if (outputFilename.isEmpty())
-		return;
+  if (outputFilename.isEmpty())
+    return;
 
-	destinationPathLineEdit->setText(outputFilename);
+  destinationPathLineEdit->setText(outputFilename);
 }

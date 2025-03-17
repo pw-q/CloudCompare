@@ -19,6 +19,7 @@
 #define CC_2_5D_EDITOR_HEADER
 
 // qCC_db
+#include <ccPolyline.h>
 #include <ccRasterGrid.h>
 
 class ccBoundingBoxEditorDlg;
@@ -102,6 +103,9 @@ protected: // members
 
   //! 'Raster' cloud
   ccPointCloud *m_rasterCloud;
+
+  //！ 'Raster' polyline
+  ccPolyline *m_rasterLine;
 };
 
 #endif // CC_2_5D_EDITOR_HEADER

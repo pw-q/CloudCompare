@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -11,7 +11,7 @@
 //#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 //#  GNU General Public License for more details.                          #
 //#                                                                        #
-//#          COPYRIGHT: CloudCompare project                               #
+//#          COPYRIGHT: Zoomlion project                               #
 //#                                                                        #
 //##########################################################################
 
@@ -20,38 +20,32 @@
 #include "HeightProfileFilter.h"
 #include "MAFilter.h"
 #include "MascaretFilter.h"
-#include "ObjFilter.h"
 #include "OFFFilter.h"
+#include "ObjFilter.h"
 #include "PDMSFilter.h"
 #include "PTXFilter.h"
-#include "SimpleBinFilter.h"
 #include "STLFilter.h"
+#include "SimpleBinFilter.h"
 #include "VTKFilter.h"
 
+qCoreIO::qCoreIO(QObject *parent)
+    : QObject(parent), ccIOPluginInterface(":/CC/plugin/CoreIO/info.json") {}
 
-qCoreIO::qCoreIO( QObject *parent ) :
-	QObject( parent ),
-	ccIOPluginInterface( ":/CC/plugin/CoreIO/info.json" )
-{
+void qCoreIO::registerCommands(ccCommandLineInterface *inCmdLine) {
+  Q_UNUSED(inCmdLine);
 }
 
-void qCoreIO::registerCommands( ccCommandLineInterface *inCmdLine )
-{
-	Q_UNUSED( inCmdLine );
-}
-
-ccIOPluginInterface::FilterList qCoreIO::getFilters()
-{
-	return {
-		FileIOFilter::Shared( new PTXFilter ),
-		FileIOFilter::Shared( new SimpleBinFilter ),
-		FileIOFilter::Shared( new ObjFilter ),
-		FileIOFilter::Shared( new VTKFilter ),
-		FileIOFilter::Shared( new STLFilter ),
-		FileIOFilter::Shared( new OFFFilter ),
-		FileIOFilter::Shared( new PDMSFilter ),
-		FileIOFilter::Shared( new MAFilter ),
-		FileIOFilter::Shared( new MascaretFilter ),
-		FileIOFilter::Shared( new HeightProfileFilter ),
-	};
+ccIOPluginInterface::FilterList qCoreIO::getFilters() {
+  return {
+      FileIOFilter::Shared(new PTXFilter),
+      FileIOFilter::Shared(new SimpleBinFilter),
+      FileIOFilter::Shared(new ObjFilter),
+      FileIOFilter::Shared(new VTKFilter),
+      FileIOFilter::Shared(new STLFilter),
+      FileIOFilter::Shared(new OFFFilter),
+      FileIOFilter::Shared(new PDMSFilter),
+      FileIOFilter::Shared(new MAFilter),
+      FileIOFilter::Shared(new MascaretFilter),
+      FileIOFilter::Shared(new HeightProfileFilter),
+  };
 }

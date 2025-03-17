@@ -75,7 +75,7 @@ public:
       unsigned char vertDim, double gridStep, unsigned gridWidth,
       unsigned gridHeight, ccRasterGrid::ProjectionType projectionType,
       ccRasterGrid::EmptyCellFillOption groundEmptyCellFillStrategy,
-      double groundMaxEdgeLength,
+      int krigingKNN,
       ccRasterGrid::EmptyCellFillOption ceilEmptyCellFillStrategy,
       double ceilMaxEdgeLength, ccVolumeCalcTool::ReportInfo &reportInfo,
       double groundHeight, double ceilHeight, QWidget *parentWidget = nullptr);

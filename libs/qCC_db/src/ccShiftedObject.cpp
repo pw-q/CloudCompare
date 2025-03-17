@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,77 +17,66 @@
 
 #include "ccShiftedObject.h"
 
-//local
+// local
 #include "ccLog.h"
 #include "ccSerializableObject.h"
 
-ccShiftedObject::ccShiftedObject(QString name, unsigned uniqueID/*=ccUniqueIDGenerator::InvalidUniqueID*/)
-	: ccHObject(name, uniqueID)
-	, m_globalShift(0, 0, 0)
-	, m_globalScale(1.0)
-{
+ccShiftedObject::ccShiftedObject(
+    QString name, unsigned uniqueID /*=ccUniqueIDGenerator::InvalidUniqueID*/)
+    : ccHObject(name, uniqueID), m_globalShift(0, 0, 0), m_globalScale(1.0) {}
+
+void ccShiftedObject::copyGlobalShiftAndScale(const ccShiftedObject &s) {
+  setGlobalShift(s.getGlobalShift());
+  setGlobalScale(s.getGlobalScale());
 }
 
-void ccShiftedObject::copyGlobalShiftAndScale(const ccShiftedObject& s)
-{
-	setGlobalShift(s.getGlobalShift());
-	setGlobalScale(s.getGlobalScale());
+void ccShiftedObject::setGlobalShift(const CCVector3d &shift) {
+  m_globalShift = shift;
 }
 
-void ccShiftedObject::setGlobalShift(const CCVector3d& shift)
-{
-	m_globalShift = shift;
+void ccShiftedObject::setGlobalScale(double scale) {
+  if (scale == 0) {
+    ccLog::Warning("[setGlobalScale] Invalid scale (zero)!");
+    m_globalScale = 1.0;
+  } else {
+    m_globalScale = scale;
+  }
 }
 
-void ccShiftedObject::setGlobalScale(double scale)
-{
-	if (scale == 0)
-	{
-		ccLog::Warning("[setGlobalScale] Invalid scale (zero)!");
-		m_globalScale = 1.0;
-	}
-	else
-	{
-		m_globalScale = scale;
-	}
+bool ccShiftedObject::saveShiftInfoToFile(QFile &out) const {
+  //'coordinates shift'
+  if (out.write((const char *)m_globalShift.u, sizeof(double) * 3) < 0)
+    return ccSerializableObject::WriteError();
+  //'global scale'
+  if (out.write((const char *)&m_globalScale, sizeof(double)) < 0)
+    return ccSerializableObject::WriteError();
+
+  return true;
 }
 
-bool ccShiftedObject::saveShiftInfoToFile(QFile& out) const
-{
-	//'coordinates shift'
-	if (out.write((const char*)m_globalShift.u, sizeof(double) * 3) < 0)
-		return ccSerializableObject::WriteError();
-	//'global scale'
-	if (out.write((const char*)&m_globalScale, sizeof(double)) < 0)
-		return ccSerializableObject::WriteError();
+bool ccShiftedObject::loadShiftInfoFromFile(QFile &in) {
+  //'coordinates shift'
+  if (in.read((char *)m_globalShift.u, sizeof(double) * 3) < 0)
+    return ccSerializableObject::ReadError();
+  //'global scale'
+  if (in.read((char *)&m_globalScale, sizeof(double)) < 0)
+    return ccSerializableObject::ReadError();
 
-	return true;
+  return true;
 }
 
-bool ccShiftedObject::loadShiftInfoFromFile(QFile& in)
-{
-	//'coordinates shift'
-	if (in.read((char*)m_globalShift.u, sizeof(double) * 3) < 0)
-		return ccSerializableObject::ReadError();
-	//'global scale'
-	if (in.read((char*)&m_globalScale, sizeof(double)) < 0)
-		return ccSerializableObject::ReadError();
-
-	return true;
+bool ccShiftedObject::getOwnGlobalBB(CCVector3d &minCorner,
+                                     CCVector3d &maxCorner) {
+  ccBBox box = getOwnBB(false);
+  minCorner = toGlobal3d(box.minCorner());
+  maxCorner = toGlobal3d(box.maxCorner());
+  return box.isValid();
 }
 
-bool ccShiftedObject::getOwnGlobalBB(CCVector3d& minCorner, CCVector3d& maxCorner)
-{
-	ccBBox box = getOwnBB(false);
-	minCorner = toGlobal3d(box.minCorner());
-	maxCorner = toGlobal3d(box.maxCorner());
-	return box.isValid();
-}
-
-ccHObject::GlobalBoundingBox ccShiftedObject::getOwnGlobalBB(bool withGLFeatures/*=false*/)
-{
-	ccBBox box = getOwnBB(false);
-	CCVector3d minCorner = toGlobal3d(box.minCorner());
-	CCVector3d maxCorner = toGlobal3d(box.maxCorner());
-	return GlobalBoundingBox(minCorner, maxCorner, box.isValid());
+ccHObject::GlobalBoundingBox
+ccShiftedObject::getOwnGlobalBB(bool withGLFeatures /*=false*/) {
+  ccBBox box = getOwnBB(false);
+  CCVector3d minCorner = toGlobal3d(box.minCorner());
+  CCVector3d maxCorner = toGlobal3d(box.maxCorner());
+  return GlobalBoundingBox(minCorner, maxCorner, box.isValid());
 }

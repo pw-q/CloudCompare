@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,100 +17,95 @@
 
 #include "ccColorScaleSelector.h"
 
-//Qt
-#include <QHBoxLayout>
+// Qt
 #include <QComboBox>
+#include <QHBoxLayout>
 #include <QToolButton>
 
-//Local
+// Local
 #include "ccColorScalesManager.h"
 
-ccColorScaleSelector::ccColorScaleSelector(ccColorScalesManager* manager, QWidget* parent, QString defaultButtonIconPath/*=QString()*/)
-	: QFrame(parent)
-	, m_manager(manager)
-	, m_comboBox(new QComboBox())
-	, m_button(new QToolButton())
-{
-	assert(m_manager);
-	
-	setLayout(new QHBoxLayout());
-	layout()->setContentsMargins(0, 0, 0, 0);
-	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+ccColorScaleSelector::ccColorScaleSelector(
+    ccColorScalesManager *manager, QWidget *parent,
+    QString defaultButtonIconPath /*=QString()*/)
+    : QFrame(parent), m_manager(manager), m_comboBox(new QComboBox()),
+      m_button(new QToolButton()) {
+  assert(m_manager);
 
-	//combox box
-	if (m_comboBox)
-	{
-		layout()->addWidget(m_comboBox);
-	}
+  setLayout(new QHBoxLayout());
+  layout()->setContentsMargins(0, 0, 0, 0);
+  setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 
-	//tool button
-	if (m_button)
-	{
-		m_button->setIcon(QIcon(defaultButtonIconPath));
-		layout()->addWidget(m_button);
-	}
+  // combox box
+  if (m_comboBox) {
+    layout()->addWidget(m_comboBox);
+  }
+
+  // tool button
+  if (m_button) {
+    m_button->setIcon(QIcon(defaultButtonIconPath));
+    layout()->addWidget(m_button);
+  }
 }
 
-void ccColorScaleSelector::init()
-{
-	//fill combox box
-	if (m_comboBox)
-	{
-		m_comboBox->disconnect(this);
+void ccColorScaleSelector::init() {
+  // fill combox box
+  if (m_comboBox) {
+    m_comboBox->disconnect(this);
 
-		m_comboBox->clear();
-		//add all available color scales
-		assert(m_manager);
+    m_comboBox->clear();
+    // add all available color scales
+    assert(m_manager);
 
-		//sort the scales by their name
-		//DGM: See doc about qSort --> "An alternative to using qSort() is to put the items to sort in a QMap, using the sort key as the QMap key."
-		QMap<QString, QString> scales;
-		for (ccColorScalesManager::ScalesMap::const_iterator it = m_manager->map().constBegin(); it != m_manager->map().constEnd(); ++it)
-		{
-			scales.insert((*it)->getName(), (*it)->getUuid());
-		}
+    // sort the scales by their name
+    // DGM: See doc about qSort --> "An alternative to using qSort() is to put
+    // the items to sort in a QMap, using the sort key as the QMap key."
+    QMap<QString, QString> scales;
+    for (ccColorScalesManager::ScalesMap::const_iterator it =
+             m_manager->map().constBegin();
+         it != m_manager->map().constEnd(); ++it) {
+      scales.insert((*it)->getName(), (*it)->getUuid());
+    }
 
-		for (QMap<QString, QString>::const_iterator scale = scales.constBegin(); scale != scales.constEnd(); ++scale)
-		{
-			m_comboBox->addItem(scale.key(), scale.value());
-		}
+    for (QMap<QString, QString>::const_iterator scale = scales.constBegin();
+         scale != scales.constEnd(); ++scale) {
+      m_comboBox->addItem(scale.key(), scale.value());
+    }
 
-		connect(m_comboBox, qOverload<int>(&QComboBox::activated), this, &ccColorScaleSelector::colorScaleSelected);
-	}
-	//advanced tool button
-	if (m_button)
-	{
-		m_button->disconnect(this);
-		connect(m_button, &QAbstractButton::clicked, this, &ccColorScaleSelector::colorScaleEditorSummoned);
-	}
+    connect(m_comboBox, qOverload<int>(&QComboBox::activated), this,
+            &ccColorScaleSelector::colorScaleSelected);
+  }
+  // advanced tool button
+  if (m_button) {
+    m_button->disconnect(this);
+    connect(m_button, &QAbstractButton::clicked, this,
+            &ccColorScaleSelector::colorScaleEditorSummoned);
+  }
 }
 
-ccColorScale::Shared ccColorScaleSelector::getSelectedScale() const
-{
-	return getScale(m_comboBox ? m_comboBox->currentIndex() : -1);
+ccColorScale::Shared ccColorScaleSelector::getSelectedScale() const {
+  return getScale(m_comboBox ? m_comboBox->currentIndex() : -1);
 }
 
-ccColorScale::Shared ccColorScaleSelector::getScale(int index) const
-{
-	if (!m_comboBox || index < 0 || index >= m_comboBox->count())
-		return ccColorScale::Shared(nullptr);
+ccColorScale::Shared ccColorScaleSelector::getScale(int index) const {
+  if (!m_comboBox || index < 0 || index >= m_comboBox->count())
+    return ccColorScale::Shared(nullptr);
 
-	//get UUID associated to the combo-box item
-	QString UUID = m_comboBox->itemData(index).toString();
+  // get UUID associated to the combo-box item
+  QString UUID = m_comboBox->itemData(index).toString();
 
-	return m_manager ? m_manager->getScale(UUID) : ccColorScale::Shared(nullptr);
+  return m_manager ? m_manager->getScale(UUID) : ccColorScale::Shared(nullptr);
 }
 
-void ccColorScaleSelector::setSelectedScale(QString uuid)
-{
-	if (!m_comboBox)
-		return;
+void ccColorScaleSelector::setSelectedScale(QString uuid) {
+  if (!m_comboBox)
+    return;
 
-	//search right index by UUID
-	int pos = m_comboBox->findData(uuid);
-	if (pos < 0)
-		return;
-	m_comboBox->setCurrentIndex(pos);
+  // search right index by UUID
+  int pos = m_comboBox->findData(uuid);
+  if (pos < 0)
+    return;
+  m_comboBox->setCurrentIndex(pos);
 
-	Q_EMIT colorScaleSelected(pos);
+  Q_EMIT colorScaleSelected(pos);
 }

@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                       CLOUDCOMPARE PLUGIN: qSSAO                       #
+//#                       ZOOMLION PLUGIN: qSSAO                       #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,18 +17,12 @@
 
 #include "ccSSAOFilter.h"
 
-//Qt
+// Qt
 #include <QtGui>
 
 #include "qSSAO.h"
 
 qSSAO::qSSAO(QObject *parent)
-	: QObject(parent)
-	, ccGLPluginInterface(":/CC/plugin/qSSAO/info.json")
-{
-}
+    : QObject(parent), ccGLPluginInterface(":/CC/plugin/qSSAO/info.json") {}
 
-ccGlFilter* qSSAO::getFilter()
-{
-	return new ccSSAOFilter;
-}
+ccGlFilter *qSSAO::getFilter() { return new ccSSAOFilter; }

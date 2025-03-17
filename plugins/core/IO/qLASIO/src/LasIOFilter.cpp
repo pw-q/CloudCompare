@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                CLOUDCOMPARE PLUGIN: LAS-IO Plugin                      #
+//#                ZOOMLION PLUGIN: LAS-IO Plugin                      #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -205,8 +205,7 @@ CC_FILE_ERROR LasIOFilter::loadFile(const QString&  fileName,
 	std::array<LasExtraScalarField, 3> extraScalarFieldsToLoadAsNormals = m_openDialog.getExtraFieldsToBeLoadedAsNormals(availableExtraScalarFields);
 	bool                               haveToLoadNormals                = std::any_of(extraScalarFieldsToLoadAsNormals.begin(),
                                          extraScalarFieldsToLoadAsNormals.end(),
-                                         [](const LasExtraScalarField& e)
-                                         {
+                                         [](const LasExtraScalarField& e) {
                                              return e.type != LasExtraScalarField::DataType::Undocumented;
                                          });
 	m_openDialog.filterOutNotChecked(availableScalarFields, availableExtraScalarFields);

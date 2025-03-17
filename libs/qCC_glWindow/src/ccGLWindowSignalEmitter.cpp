@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -19,9 +19,9 @@
 
 #include "../include/ccGLWindowInterface.h"
 
-ccGLWindowSignalEmitter::ccGLWindowSignalEmitter(ccGLWindowInterface* associatedWindow, QObject* parent)
-	: QObject(parent)
-	, m_associatedWindow(associatedWindow)
-{
-	setObjectName(QString("Signal emitter @ GL Window #%1").arg(associatedWindow->getUniqueID()));
+ccGLWindowSignalEmitter::ccGLWindowSignalEmitter(
+    ccGLWindowInterface *associatedWindow, QObject *parent)
+    : QObject(parent), m_associatedWindow(associatedWindow) {
+  setObjectName(QString("Signal emitter @ GL Window #%1")
+                    .arg(associatedWindow->getUniqueID()));
 }

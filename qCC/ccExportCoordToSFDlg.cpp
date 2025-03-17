@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,24 +17,13 @@
 
 #include "ccExportCoordToSFDlg.h"
 
-ccExportCoordToSFDlg::ccExportCoordToSFDlg(QWidget* parent/*=nullptr*/)
-	: QDialog(parent, Qt::Tool)
-	, Ui::ExportCoordToSFDlg()
-{
-	setupUi(this);
+ccExportCoordToSFDlg::ccExportCoordToSFDlg(QWidget *parent /*=nullptr*/)
+    : QDialog(parent, Qt::Tool), Ui::ExportCoordToSFDlg() {
+  setupUi(this);
 }
 
-bool ccExportCoordToSFDlg::exportX() const
-{
-	return xCheckBox->isChecked();
-}
+bool ccExportCoordToSFDlg::exportX() const { return xCheckBox->isChecked(); }
 
-bool ccExportCoordToSFDlg::exportY() const
-{
-	return yCheckBox->isChecked();
-}
+bool ccExportCoordToSFDlg::exportY() const { return yCheckBox->isChecked(); }
 
-bool ccExportCoordToSFDlg::exportZ() const
-{
-	return zCheckBox->isChecked();
-}
+bool ccExportCoordToSFDlg::exportZ() const { return zCheckBox->isChecked(); }

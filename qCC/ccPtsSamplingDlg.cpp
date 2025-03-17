@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,59 +17,45 @@
 
 #include "ccPtsSamplingDlg.h"
 
-ccPtsSamplingDlg::ccPtsSamplingDlg(QWidget* parent/*=nullptr*/)
-	: QDialog(parent, Qt::Tool)
-	, Ui::PointsSamplingDialog()
-{
-	setupUi(this);
+ccPtsSamplingDlg::ccPtsSamplingDlg(QWidget *parent /*=nullptr*/)
+    : QDialog(parent, Qt::Tool), Ui::PointsSamplingDialog() {
+  setupUi(this);
 }
 
-bool ccPtsSamplingDlg::generateNormals() const
-{
-	return normalsCheckBox->isChecked();
+bool ccPtsSamplingDlg::generateNormals() const {
+  return normalsCheckBox->isChecked();
 }
 
-void ccPtsSamplingDlg::setGenerateNormals(bool state)
-{
-	normalsCheckBox->setChecked(state);
+void ccPtsSamplingDlg::setGenerateNormals(bool state) {
+  normalsCheckBox->setChecked(state);
 }
 
-bool ccPtsSamplingDlg::interpolateRGB() const
-{
-	return colorsCheckBox->isChecked();
+bool ccPtsSamplingDlg::interpolateRGB() const {
+  return colorsCheckBox->isChecked();
 }
 
-bool ccPtsSamplingDlg::interpolateTexture() const
-{
-	return textureCheckBox->isChecked();
+bool ccPtsSamplingDlg::interpolateTexture() const {
+  return textureCheckBox->isChecked();
 }
 
-bool ccPtsSamplingDlg::useDensity() const
-{
-	return dRadioButton->isChecked();
+bool ccPtsSamplingDlg::useDensity() const { return dRadioButton->isChecked(); }
+
+void ccPtsSamplingDlg::setUseDensity(bool state) {
+  dRadioButton->setChecked(state);
 }
 
-void ccPtsSamplingDlg::setUseDensity(bool state)
-{
-	dRadioButton->setChecked(state);
+double ccPtsSamplingDlg::getDensityValue() const {
+  return dDoubleSpinBox->value();
 }
 
-double ccPtsSamplingDlg::getDensityValue() const
-{
-	return dDoubleSpinBox->value();
+void ccPtsSamplingDlg::setDensityValue(double density) {
+  dDoubleSpinBox->setValue(density);
 }
 
-void ccPtsSamplingDlg::setDensityValue(double density)
-{
-	dDoubleSpinBox->setValue(density);
+unsigned ccPtsSamplingDlg::getPointsNumber() const {
+  return pnSpinBox->value();
 }
 
-unsigned ccPtsSamplingDlg::getPointsNumber() const
-{
-	return pnSpinBox->value();
-}
-
-void ccPtsSamplingDlg::setPointsNumber(int count)
-{
-	pnSpinBox->setValue(count);
+void ccPtsSamplingDlg::setPointsNumber(int count) {
+  pnSpinBox->setValue(count);
 }

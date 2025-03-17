@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,73 +17,61 @@
 
 #include "ccOctreeSpinBox.h"
 
-//CCCoreLib
+// CCCoreLib
 #include <CCMiscTools.h>
 
-//qCC_db
+// qCC_db
 #include <ccBBox.h>
-#include <ccOctree.h>
 #include <ccGenericPointCloud.h>
+#include <ccOctree.h>
 
-ccOctreeSpinBox::ccOctreeSpinBox(QWidget* parent/*=nullptr*/)
-	: QSpinBox(parent)
-	, m_octreeBoxWidth(0)
-{
-	setRange(0, CCCoreLib::DgmOctree::MAX_OCTREE_LEVEL);
-	
-	//we'll catch any modification of the spinbox value and update the suffix consequently
-	connect(this, qOverload<int>(&ccOctreeSpinBox::valueChanged), this, &ccOctreeSpinBox::onValueChange);
+ccOctreeSpinBox::ccOctreeSpinBox(QWidget *parent /*=nullptr*/)
+    : QSpinBox(parent), m_octreeBoxWidth(0) {
+  setRange(0, CCCoreLib::DgmOctree::MAX_OCTREE_LEVEL);
+
+  // we'll catch any modification of the spinbox value and update the suffix
+  // consequently
+  connect(this, qOverload<int>(&ccOctreeSpinBox::valueChanged), this,
+          &ccOctreeSpinBox::onValueChange);
 }
 
-void ccOctreeSpinBox::setCloud(ccGenericPointCloud* cloud)
-{
-	if (!cloud)
-	{
-		assert(false);
-		return;
-	}
+void ccOctreeSpinBox::setCloud(ccGenericPointCloud *cloud) {
+  if (!cloud) {
+    assert(false);
+    return;
+  }
 
-	if (cloud->getOctree())
-	{
-		setOctree(cloud->getOctree().data());
-	}
-	else
-	{
-		ccBBox box = cloud->getOwnBB(false);
-		//we make this bounding-box cubical (+0.1% growth to avoid round-off issues)
-		CCCoreLib::CCMiscTools::MakeMinAndMaxCubical(box.minCorner(), box.maxCorner(), 0.001);
-		m_octreeBoxWidth = box.getMaxBoxDim();
-		onValueChange(value());
-	}
+  if (cloud->getOctree()) {
+    setOctree(cloud->getOctree().data());
+  } else {
+    ccBBox box = cloud->getOwnBB(false);
+    // we make this bounding-box cubical (+0.1% growth to avoid round-off
+    // issues)
+    CCCoreLib::CCMiscTools::MakeMinAndMaxCubical(box.minCorner(),
+                                                 box.maxCorner(), 0.001);
+    m_octreeBoxWidth = box.getMaxBoxDim();
+    onValueChange(value());
+  }
 }
 
-void ccOctreeSpinBox::setOctree(CCCoreLib::DgmOctree* octree)
-{
-	if (octree)
-	{
-		m_octreeBoxWidth = static_cast<double>(octree->getCellSize(0));
-		onValueChange(value());
-	}
-	else
-	{
-		m_octreeBoxWidth = 0;
-		setSuffix(QString());
-	}
+void ccOctreeSpinBox::setOctree(CCCoreLib::DgmOctree *octree) {
+  if (octree) {
+    m_octreeBoxWidth = static_cast<double>(octree->getCellSize(0));
+    onValueChange(value());
+  } else {
+    m_octreeBoxWidth = 0;
+    setSuffix(QString());
+  }
 }
 
-void ccOctreeSpinBox::onValueChange(int level)
-{
-	if (m_octreeBoxWidth > 0)
-	{
-		if (level >= 0/* && level <= CCCoreLib::DgmOctree::MAX_OCTREE_LEVEL*/)
-		{
-			double cs = m_octreeBoxWidth / pow(2.0, static_cast<double>(level));
-			setSuffix(QString(" (grid step = %1)").arg(cs));
-		}
-		else
-		{
-			//invalid level?!
-			setSuffix(QString());
-		}
-	}
+void ccOctreeSpinBox::onValueChange(int level) {
+  if (m_octreeBoxWidth > 0) {
+    if (level >= 0 /* && level <= CCCoreLib::DgmOctree::MAX_OCTREE_LEVEL*/) {
+      double cs = m_octreeBoxWidth / pow(2.0, static_cast<double>(level));
+      setSuffix(QString(" (grid step = %1)").arg(cs));
+    } else {
+      // invalid level?!
+      setSuffix(QString());
+    }
+  }
 }

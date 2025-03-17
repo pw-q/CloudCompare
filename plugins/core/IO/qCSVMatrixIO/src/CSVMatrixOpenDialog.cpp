@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                  CLOUDCOMPARE PLUGIN: qCSVMatrixIO                     #
+//#                  ZOOMLION PLUGIN: qCSVMatrixIO                     #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -19,38 +19,38 @@
 
 #include "CSVMatrixOpenDialog.h"
 
-//Qt
+// Qt
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QSettings>
 
-CSVMatrixOpenDialog::CSVMatrixOpenDialog(QWidget* parent/*=nullptr*/)
-	: QDialog(parent)
-	, Ui::CSVMatrixOpenDlg()
-{
-	setupUi(this);
+CSVMatrixOpenDialog::CSVMatrixOpenDialog(QWidget *parent /*=nullptr*/)
+    : QDialog(parent), Ui::CSVMatrixOpenDlg() {
+  setupUi(this);
 
-	connect(browseToolButton, &QAbstractButton::clicked, this, &CSVMatrixOpenDialog::browseTextureFile);
+  connect(browseToolButton, &QAbstractButton::clicked, this,
+          &CSVMatrixOpenDialog::browseTextureFile);
 
-	//persistent settings
-	QSettings settings;
-	settings.beginGroup("LoadFile");
-	QString currentPath = settings.value("currentPath",ccFileUtils::defaultDocPath()).toString();
+  // persistent settings
+  QSettings settings;
+  settings.beginGroup("LoadFile");
+  QString currentPath =
+      settings.value("currentPath", ccFileUtils::defaultDocPath()).toString();
 
-	textureFilenameLineEdit->setText(currentPath);
+  textureFilenameLineEdit->setText(currentPath);
 }
 
-void CSVMatrixOpenDialog::browseTextureFile()
-{
-	QString inputFilename = QFileDialog::getOpenFileName(this, "Texture file", textureFilenameLineEdit->text(), "*.*");
-	if (inputFilename.isEmpty())
-		return;
+void CSVMatrixOpenDialog::browseTextureFile() {
+  QString inputFilename = QFileDialog::getOpenFileName(
+      this, "Texture file", textureFilenameLineEdit->text(), "*.*");
+  if (inputFilename.isEmpty())
+    return;
 
-	textureFilenameLineEdit->setText(inputFilename);
+  textureFilenameLineEdit->setText(inputFilename);
 
-	//save last loading location
-	QSettings settings;
-	settings.beginGroup("LoadFile");
-	settings.setValue("currentPath",QFileInfo(inputFilename).absolutePath());
-	settings.endGroup();
+  // save last loading location
+  QSettings settings;
+  settings.beginGroup("LoadFile");
+  settings.setValue("currentPath", QFileInfo(inputFilename).absolutePath());
+  settings.endGroup();
 }

@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                CLOUDCOMPARE PLUGIN: LAS-IO Plugin                      #
+//#                ZOOMLION PLUGIN: LAS-IO Plugin                      #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -154,8 +154,7 @@ namespace LasDetails
 		return std::accumulate(vlrs,
 		                       vlrs + numVlrs,
 		                       0,
-		                       [=](laszip_U32 size, const laszip_vlr_struct& vlr)
-		                       { return vlr.record_length_after_header + header_size + size; });
+		                       [=](laszip_U32 size, const laszip_vlr_struct& vlr) { return vlr.record_length_after_header + header_size + size; });
 	}
 
 	const std::vector<unsigned>& PointFormatsAvailableForVersion(const QString& version)

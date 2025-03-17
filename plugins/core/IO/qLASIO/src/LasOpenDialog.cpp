@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                CLOUDCOMPARE PLUGIN: LAS-IO Plugin                      #
+//#                ZOOMLION PLUGIN: LAS-IO Plugin                      #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -72,16 +72,12 @@ LasOpenDialog::LasOpenDialog(QWidget* parent)
 	connect(applyAllButton, &QPushButton::clicked, this, &QDialog::accept);
 	connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
 	connect(applyAllButton, &QPushButton::clicked, this, &LasOpenDialog::onApplyAll);
-	connect(selectAllToolButton, &QPushButton::clicked, [&]
-	        { doSelectAll(true); });
-	connect(unselectAllToolButton, &QPushButton::clicked, this, [&]
-	        { doSelectAll(false); });
+	connect(selectAllToolButton, &QPushButton::clicked, [&] { doSelectAll(true); });
+	connect(unselectAllToolButton, &QPushButton::clicked, this, [&] { doSelectAll(false); });
 	connect(tilingBrowseToolButton, &QPushButton::clicked, this, &LasOpenDialog::onBrowseTilingOutputDir);
 	connect(actionTab, &QTabWidget::currentChanged, this, &LasOpenDialog::onCurrentTabChanged);
-	connect(selectAllESFToolButton, &QPushButton::clicked, [&]
-	        { doSelectAllESF(true); });
-	connect(unselectAllESFToolButton, &QPushButton::clicked, this, [&]
-	        { doSelectAllESF(false); });
+	connect(selectAllESFToolButton, &QPushButton::clicked, [&] { doSelectAllESF(true); });
+	connect(unselectAllESFToolButton, &QPushButton::clicked, this, [&] { doSelectAllESF(false); });
 	connect(xNormalComboBox,
 	        (void (QComboBox::*)(const QString&))(&QComboBox::currentIndexChanged),
 	        this,
@@ -232,8 +228,7 @@ void LasOpenDialog::setAvailableScalarFields(const std::vector<LasScalarField>& 
 void LasOpenDialog::filterOutNotChecked(std::vector<LasScalarField>&      scalarFields,
                                         std::vector<LasExtraScalarField>& extraScalarFields)
 {
-	const auto isFieldSelected = [this](const auto& field)
-	{ return isChecked(field); };
+	const auto isFieldSelected = [this](const auto& field) { return isChecked(field); };
 
 	RemoveFalse(scalarFields, isFieldSelected);
 	RemoveFalse(extraScalarFields, isFieldSelected);
@@ -256,8 +251,7 @@ std::array<LasExtraScalarField, 3> LasOpenDialog::getExtraFieldsToBeLoadedAsNorm
 				const auto        it   = std::find_if(
                     extraScalarFields.begin(),
                     extraScalarFields.end(),
-                    [&name](const LasExtraScalarField& e)
-                    { return e.name == name; });
+                    [&name](const LasExtraScalarField& e) { return e.name == name; });
 
 				// safeguard
 				if (it != extraScalarFields.end())

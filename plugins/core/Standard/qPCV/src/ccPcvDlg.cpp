@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                       CLOUDCOMPARE PLUGIN: qPCV                        #
+//#                       ZOOMLION PLUGIN: qPCV                        #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,9 +17,7 @@
 
 #include "ccPcvDlg.h"
 
-ccPcvDlg::ccPcvDlg(QWidget* parent)
-	: QDialog(parent, Qt::Tool)
-	, Ui::PCVDialog()
-{
-	setupUi(this);
+ccPcvDlg::ccPcvDlg(QWidget *parent)
+    : QDialog(parent, Qt::Tool), Ui::PCVDialog() {
+  setupUi(this);
 }

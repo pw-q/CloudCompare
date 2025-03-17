@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -11,20 +11,18 @@
 //#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 //#  GNU General Public License for more details.                          #
 //#                                                                        #
-//#          COPYRIGHT: CloudCompare Project / Chris Brown                 #
+//#          COPYRIGHT: Zoomlion project / Chris Brown                 #
 //#                                                                        #
 //##########################################################################
 
 #include "ccPrimitiveDistanceDlg.h"
 
-ccPrimitiveDistanceDlg::ccPrimitiveDistanceDlg(QWidget* parent)
-	: QDialog(parent)
-	, Ui::primitiveDistanceDlg()
-{
-	setupUi(this);
+ccPrimitiveDistanceDlg::ccPrimitiveDistanceDlg(QWidget *parent)
+    : QDialog(parent), Ui::primitiveDistanceDlg() {
+  setupUi(this);
 
-	signedDistCheckBox->setChecked(true);
-	flipNormalsCheckBox->setEnabled(true);
-	flipNormalsCheckBox->setChecked(false);
-	treatPlanesAsBoundedCheckBox->setChecked(false);
+  signedDistCheckBox->setChecked(true);
+  flipNormalsCheckBox->setEnabled(true);
+  flipNormalsCheckBox->setChecked(false);
+  treatPlanesAsBoundedCheckBox->setChecked(false);
 }

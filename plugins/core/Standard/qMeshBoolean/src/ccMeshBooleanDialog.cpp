@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                   CLOUDCOMPARE PLUGIN: qMeshBoolean                    #
+//#                   ZOOMLION PLUGIN: qMeshBoolean                    #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,57 +17,48 @@
 
 #include "ccMeshBooleanDialog.h"
 
-ccMeshBooleanDialog::ccMeshBooleanDialog(QWidget* parent/*=nullptr*/)
-	: QDialog(parent, Qt::Tool)
-	, Ui::MeshBooleanDialog()
-	, m_selectedOperation(UNION)
-	, m_isSwapped(false)
-{
-	setupUi(this);
+ccMeshBooleanDialog::ccMeshBooleanDialog(QWidget *parent /*=nullptr*/)
+    : QDialog(parent, Qt::Tool), Ui::MeshBooleanDialog(),
+      m_selectedOperation(UNION), m_isSwapped(false) {
+  setupUi(this);
 
-	connect(unionPushButton,	SIGNAL(clicked()), this, SLOT(unionSelected()));
-	connect(interPushButton,	SIGNAL(clicked()), this, SLOT(intersectSelected()));
-	connect(diffPushButton,		SIGNAL(clicked()), this, SLOT(diffSelected()));
-	connect(symDiffPushButton,	SIGNAL(clicked()), this, SLOT(symDiffSelected()));
-	connect(swapToolButton,		SIGNAL(clicked()), this, SLOT(swap()));
+  connect(unionPushButton, SIGNAL(clicked()), this, SLOT(unionSelected()));
+  connect(interPushButton, SIGNAL(clicked()), this, SLOT(intersectSelected()));
+  connect(diffPushButton, SIGNAL(clicked()), this, SLOT(diffSelected()));
+  connect(symDiffPushButton, SIGNAL(clicked()), this, SLOT(symDiffSelected()));
+  connect(swapToolButton, SIGNAL(clicked()), this, SLOT(swap()));
 }
 
-void ccMeshBooleanDialog::setNames(const QString& A, const QString& B)
-{
-	meshALineEdit->setText(A);
-	meshBLineEdit->setText(B);
+void ccMeshBooleanDialog::setNames(const QString &A, const QString &B) {
+  meshALineEdit->setText(A);
+  meshBLineEdit->setText(B);
 }
 
-void ccMeshBooleanDialog::unionSelected()
-{
-	m_selectedOperation = UNION;
-	accept();
+void ccMeshBooleanDialog::unionSelected() {
+  m_selectedOperation = UNION;
+  accept();
 }
 
-void ccMeshBooleanDialog::intersectSelected()
-{
-	m_selectedOperation = INTERSECT;
-	accept();
+void ccMeshBooleanDialog::intersectSelected() {
+  m_selectedOperation = INTERSECT;
+  accept();
 }
 
-void ccMeshBooleanDialog::diffSelected()
-{
-	m_selectedOperation = DIFF;
-	accept();
+void ccMeshBooleanDialog::diffSelected() {
+  m_selectedOperation = DIFF;
+  accept();
 }
 
-void ccMeshBooleanDialog::symDiffSelected()
-{
-	m_selectedOperation = SYM_DIFF;
-	accept();
+void ccMeshBooleanDialog::symDiffSelected() {
+  m_selectedOperation = SYM_DIFF;
+  accept();
 }
 
-void ccMeshBooleanDialog::swap()
-{
-	m_isSwapped = !m_isSwapped;
+void ccMeshBooleanDialog::swap() {
+  m_isSwapped = !m_isSwapped;
 
-	QString A = meshALineEdit->text();
-	QString B = meshBLineEdit->text();
-	
-	setNames(B,A);
+  QString A = meshALineEdit->text();
+  QString B = meshBLineEdit->text();
+
+  setNames(B, A);
 }

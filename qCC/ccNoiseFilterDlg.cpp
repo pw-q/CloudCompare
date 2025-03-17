@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,9 +17,7 @@
 
 #include "ccNoiseFilterDlg.h"
 
-ccNoiseFilterDlg::ccNoiseFilterDlg(QWidget* parent/*=nullptr*/)
-	: QDialog(parent, Qt::Tool)
-	, Ui::NoiseFilterDialog()
-{
-	setupUi(this);
+ccNoiseFilterDlg::ccNoiseFilterDlg(QWidget *parent /*=nullptr*/)
+    : QDialog(parent, Qt::Tool), Ui::NoiseFilterDialog() {
+  setupUi(this);
 }

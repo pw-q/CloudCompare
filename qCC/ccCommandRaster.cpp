@@ -94,7 +94,7 @@ GetEmptyCellFillingStrategy(QString option, ccCommandLineInterface &cmd) {
   } else if (option == COMMAND_RASTER_FILL_INTERPOLATE) {
     return ccRasterGrid::INTERPOLATE_DELAUNAY;
   } else if (option == COMMAND_RASTER_FILL_KRIGING) {
-    return ccRasterGrid::KRIGING;
+    return ccRasterGrid::INTERPOLATE_KRIGING;
   } else {
     assert(false);
     cmd.warning(QString("Unknown empty cell filling strategy: %1 (defaulting "

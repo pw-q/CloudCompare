@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,117 +17,97 @@
 
 #include "ccOrderChoiceDlg.h"
 
-//common
+// common
 #include <ccQtHelpers.h>
 
-//qCC_plugins
+// qCC_plugins
 #include <ccMainAppInterface.h>
 
-//qCC_db
+// qCC_db
 #include <ccHObject.h>
 
-//Qt
+// Qt
 #include <QMainWindow>
 
-//ui template
+// ui template
 #include <ui_roleChoiceDlg.h>
 
-ccOrderChoiceDlg::ccOrderChoiceDlg(	ccHObject* firstEntity,
-									QString firstRole,
-									ccHObject* secondEntity,
-									QString secondRole,
-									ccMainAppInterface* app/*=nullptr*/)
-	: QDialog(app ? app->getMainWindow() : nullptr, Qt::Tool)
-	, m_gui(new Ui_RoleChoiceDialog)
-	, m_app(app)
-	, m_firstEnt(firstEntity)
-	, m_secondEnt(secondEntity)
-	, m_useInputOrder(true)
-{
-	m_gui->setupUi(this);
+ccOrderChoiceDlg::ccOrderChoiceDlg(ccHObject *firstEntity, QString firstRole,
+                                   ccHObject *secondEntity, QString secondRole,
+                                   ccMainAppInterface *app /*=nullptr*/)
+    : QDialog(app ? app->getMainWindow() : nullptr, Qt::Tool),
+      m_gui(new Ui_RoleChoiceDialog), m_app(app), m_firstEnt(firstEntity),
+      m_secondEnt(secondEntity), m_useInputOrder(true) {
+  m_gui->setupUi(this);
 
-	connect(m_gui->swapButton, &QAbstractButton::clicked, this, &ccOrderChoiceDlg::swap);
+  connect(m_gui->swapButton, &QAbstractButton::clicked, this,
+          &ccOrderChoiceDlg::swap);
 
-	m_gui->firstlabel->setText(firstRole);
-	m_gui->secondlabel->setText(secondRole);
+  m_gui->firstlabel->setText(firstRole);
+  m_gui->secondlabel->setText(secondRole);
 
-	ccQtHelpers::SetButtonColor(m_gui->firstColorButton, Qt::red);
-	ccQtHelpers::SetButtonColor(m_gui->secondColorButton, Qt::yellow);
+  ccQtHelpers::SetButtonColor(m_gui->firstColorButton, Qt::red);
+  ccQtHelpers::SetButtonColor(m_gui->secondColorButton, Qt::yellow);
 
-	setColorsAndLabels();
+  setColorsAndLabels();
 }
 
-ccOrderChoiceDlg::~ccOrderChoiceDlg()
-{
-	if (m_firstEnt)
-	{
-		m_firstEnt->enableTempColor(false);
-		m_firstEnt->prepareDisplayForRefresh_recursive();
-	}
-	if (m_secondEnt)
-	{
-		m_secondEnt->enableTempColor(false);
-		m_secondEnt->prepareDisplayForRefresh_recursive();
-	}
-	
-	if (m_app)
-	{
-		m_app->refreshAll();
-	}
-	
-	if (m_gui)
-	{
-		delete m_gui;
-		m_gui = nullptr;
-	}
+ccOrderChoiceDlg::~ccOrderChoiceDlg() {
+  if (m_firstEnt) {
+    m_firstEnt->enableTempColor(false);
+    m_firstEnt->prepareDisplayForRefresh_recursive();
+  }
+  if (m_secondEnt) {
+    m_secondEnt->enableTempColor(false);
+    m_secondEnt->prepareDisplayForRefresh_recursive();
+  }
+
+  if (m_app) {
+    m_app->refreshAll();
+  }
+
+  if (m_gui) {
+    delete m_gui;
+    m_gui = nullptr;
+  }
 }
 
-ccHObject* ccOrderChoiceDlg::getFirstEntity()
-{
-	return m_useInputOrder ? m_firstEnt : m_secondEnt;
+ccHObject *ccOrderChoiceDlg::getFirstEntity() {
+  return m_useInputOrder ? m_firstEnt : m_secondEnt;
 }
 
-ccHObject* ccOrderChoiceDlg::getSecondEntity()
-{
-	return m_useInputOrder ? m_secondEnt : m_firstEnt;
+ccHObject *ccOrderChoiceDlg::getSecondEntity() {
+  return m_useInputOrder ? m_secondEnt : m_firstEnt;
 }
 
-void ccOrderChoiceDlg::setColorsAndLabels()
-{
-	ccHObject* o1 = getFirstEntity();
-	if (o1)
-	{
-		m_gui->firstLineEdit->setText(o1->getName());
-		o1->setEnabled(true);
-		o1->setVisible(true);
-		o1->setTempColor(ccColor::red);
-		o1->prepareDisplayForRefresh_recursive();
-	}
-	else
-	{
-		m_gui->firstLineEdit->setText("No entity!");
-	}
+void ccOrderChoiceDlg::setColorsAndLabels() {
+  ccHObject *o1 = getFirstEntity();
+  if (o1) {
+    m_gui->firstLineEdit->setText(o1->getName());
+    o1->setEnabled(true);
+    o1->setVisible(true);
+    o1->setTempColor(ccColor::red);
+    o1->prepareDisplayForRefresh_recursive();
+  } else {
+    m_gui->firstLineEdit->setText("No entity!");
+  }
 
-	ccHObject* o2 = getSecondEntity();
-	if (o2)
-	{
-		m_gui->secondLineEdit->setText(o2->getName());
-		o2->setEnabled(true);
-		o2->setVisible(true);
-		o2->setTempColor(ccColor::yellow);
-		o2->prepareDisplayForRefresh_recursive();
-	}
-	else
-	{
-		m_gui->secondLineEdit->setText("No entity!");
-	}
+  ccHObject *o2 = getSecondEntity();
+  if (o2) {
+    m_gui->secondLineEdit->setText(o2->getName());
+    o2->setEnabled(true);
+    o2->setVisible(true);
+    o2->setTempColor(ccColor::yellow);
+    o2->prepareDisplayForRefresh_recursive();
+  } else {
+    m_gui->secondLineEdit->setText("No entity!");
+  }
 
-	if (m_app)
-		m_app->refreshAll();
+  if (m_app)
+    m_app->refreshAll();
 }
 
-void ccOrderChoiceDlg::swap()
-{
-	m_useInputOrder = !m_useInputOrder;
-	setColorsAndLabels();
+void ccOrderChoiceDlg::swap() {
+  m_useInputOrder = !m_useInputOrder;
+  setColorsAndLabels();
 }

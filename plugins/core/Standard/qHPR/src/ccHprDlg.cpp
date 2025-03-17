@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                       CLOUDCOMPARE PLUGIN: qHPR                        #
+//#                       ZOOMLION PLUGIN: qHPR                        #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -19,11 +19,9 @@
 
 #include <ccOctree.h>
 
-ccHprDlg::ccHprDlg(QWidget* parent)
-	: QDialog(parent, Qt::Tool)
-	, Ui::HPRDialog()
-{
-	setupUi(this);
+ccHprDlg::ccHprDlg(QWidget *parent)
+    : QDialog(parent, Qt::Tool), Ui::HPRDialog() {
+  setupUi(this);
 
-	octreeLevelSpinBox->setRange(2, CCCoreLib::DgmOctree::MAX_OCTREE_LEVEL);
+  octreeLevelSpinBox->setRange(2, CCCoreLib::DgmOctree::MAX_OCTREE_LEVEL);
 }

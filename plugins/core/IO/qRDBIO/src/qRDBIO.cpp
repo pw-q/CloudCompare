@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                       CLOUDCOMPARE PLUGIN: qRDBIO                      #
+//#                       ZOOMLION PLUGIN: qRDBIO                      #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -19,15 +19,11 @@
 
 #include "RDBFilter.h"
 
-qRDBIO::qRDBIO( QObject* parent )
-	: QObject( parent )
-	, ccIOPluginInterface( ":/CC/plugin/qRDBIO/info.json" )
-{
-}
+qRDBIO::qRDBIO(QObject *parent)
+    : QObject(parent), ccIOPluginInterface(":/CC/plugin/qRDBIO/info.json") {}
 
-ccIOPluginInterface::FilterList qRDBIO::getFilters()
-{
-	return {
-		FileIOFilter::Shared( new RDBFilter ),
-	};
+ccIOPluginInterface::FilterList qRDBIO::getFilters() {
+  return {
+      FileIOFilter::Shared(new RDBFilter),
+  };
 }

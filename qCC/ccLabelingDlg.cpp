@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -19,41 +19,29 @@
 
 #include <DgmOctree.h>
 
-ccLabelingDlg::ccLabelingDlg(QWidget* parent/*=nullptr*/)
-	: QDialog(parent, Qt::Tool)
-	, Ui::LabelingDialog()
-{
-	setupUi(this);
+ccLabelingDlg::ccLabelingDlg(QWidget *parent /*=nullptr*/)
+    : QDialog(parent, Qt::Tool), Ui::LabelingDialog() {
+  setupUi(this);
 
-	octreeLevelSpinBox->setMaximum(CCCoreLib::DgmOctree::MAX_OCTREE_LEVEL);
+  octreeLevelSpinBox->setMaximum(CCCoreLib::DgmOctree::MAX_OCTREE_LEVEL);
 }
 
-int ccLabelingDlg::getOctreeLevel()
-{
-	return octreeLevelSpinBox->value();
+int ccLabelingDlg::getOctreeLevel() { return octreeLevelSpinBox->value(); }
+
+int ccLabelingDlg::getMinPointsNb() { return minPtsSpinBox->value(); }
+
+bool ccLabelingDlg::randomColors() {
+  return (randomColorsCheckBox->checkState() == Qt::Checked);
 }
 
-int ccLabelingDlg::getMinPointsNb()
-{
-	return minPtsSpinBox->value();
+void ccLabelingDlg::setOctreeLevel(int octreeLevel) {
+  octreeLevelSpinBox->setValue(octreeLevel);
 }
 
-bool ccLabelingDlg::randomColors()
-{
-	return (randomColorsCheckBox->checkState() == Qt::Checked);
+void ccLabelingDlg::setMinPointsNb(int minPointsNb) {
+  minPtsSpinBox->setValue(minPointsNb);
 }
 
-void ccLabelingDlg::setOctreeLevel(int octreeLevel)
-{
-	octreeLevelSpinBox->setValue(octreeLevel);
-}
-
-void ccLabelingDlg::setMinPointsNb(int minPointsNb)
-{
-	minPtsSpinBox->setValue(minPointsNb);
-}
-
-void ccLabelingDlg::setRandomColors(bool state)
-{
-	randomColorsCheckBox->setChecked(state);
+void ccLabelingDlg::setRandomColors(bool state) {
+  randomColorsCheckBox->setChecked(state);
 }

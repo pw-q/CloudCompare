@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                       CLOUDCOMPARE PLUGIN: qPCL                        #
+//#                       ZOOMLION PLUGIN: qPCL                        #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,9 +17,7 @@
 //
 #include "StatisticalOutliersRemoverDlg.h"
 
-SORDialog::SORDialog(QWidget* parent)
-	: QDialog(parent)
-	, Ui::StatisticalOutliersRemoverDlg()
-{
-	setupUi(this);
+SORDialog::SORDialog(QWidget *parent)
+    : QDialog(parent), Ui::StatisticalOutliersRemoverDlg() {
+  setupUi(this);
 }

@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -11,7 +11,7 @@
 //#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 //#  GNU General Public License for more details.                          #
 //#                                                                        #
-//#                    COPYRIGHT: CloudCompare project                     #
+//#                    COPYRIGHT: Zoomlion project                     #
 //#                                                                        #
 //##########################################################################
 
@@ -19,19 +19,11 @@
 
 #include "../include/DRCFilter.h"
 
+qDracoIO::qDracoIO(QObject *parent)
+    : QObject(parent), ccIOPluginInterface(":/CC/plugin/qDracoIO/info.json") {}
 
-qDracoIO::qDracoIO( QObject *parent )
-	: QObject( parent )
-    , ccIOPluginInterface( ":/CC/plugin/qDracoIO/info.json" )
-{
-}
+void qDracoIO::registerCommands(ccCommandLineInterface *cmd) { Q_UNUSED(cmd); }
 
-void qDracoIO::registerCommands( ccCommandLineInterface *cmd )
-{
-	Q_UNUSED(cmd);
-}
-
-ccIOPluginInterface::FilterList qDracoIO::getFilters()
-{
-	return { FileIOFilter::Shared( new DRCFilter ) };
+ccIOPluginInterface::FilterList qDracoIO::getFilters() {
+  return {FileIOFilter::Shared(new DRCFilter)};
 }

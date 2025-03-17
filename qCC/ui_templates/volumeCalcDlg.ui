@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Volume calculation</string>
+   <string>体积计算</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_3">
    <item>
@@ -138,7 +138,7 @@
          <item row="5" column="0">
           <widget class="QLabel" name="label_13">
            <property name="text">
-            <string>最长边长度：</string>
+            <string>近邻点数量：</string>
            </property>
           </widget>
          </item>
@@ -146,29 +146,6 @@
           <widget class="QLabel" name="label_12">
            <property name="text">
             <string>参考高度：</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1" colspan="2">
-          <widget class="QDoubleSpinBox" name="groundMaxEdgeLengthDoubleSpinBox">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>Max edge length for interpolation/triangulation
-(ignored if zero)</string>
-           </property>
-           <property name="suffix">
-            <string>m</string>
-           </property>
-           <property name="decimals">
-            <number>6</number>
-           </property>
-           <property name="minimum">
-            <double>-999999999.000000000000000</double>
-           </property>
-           <property name="maximum">
-            <double>999999999.000000000000000</double>
            </property>
           </widget>
          </item>
@@ -214,6 +191,20 @@
          </item>
          <item row="2" column="1" colspan="2">
           <widget class="QComboBox" name="comboEdge"/>
+         </item>
+         <item row="5" column="1" colspan="2">
+          <widget class="QSpinBox" name="spinKNN">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>Max edge length for interpolation/triangulation
+(ignored if zero)</string>
+           </property>
+           <property name="value">
+            <number>8</number>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -279,6 +270,9 @@
                <widget class="QDoubleSpinBox" name="gridStepDoubleSpinBox">
                 <property name="toolTip">
                  <string>size of step of the grid generated (in the same units as the coordinates of the point cloud)</string>
+                </property>
+                <property name="suffix">
+                 <string>m</string>
                 </property>
                 <property name="decimals">
                  <number>6</number>
@@ -414,8 +408,18 @@
         <property name="title">
          <string>计算结果</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="2" column="0">
+          <widget class="QPushButton" name="clipboardPushButton">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>复制结果</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
           <widget class="QLabel" name="spareseWarningLabel">
            <property name="styleSheet">
             <string notr="true">color:red;</string>
@@ -429,38 +433,7 @@ You should fill the empty cells...</string>
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QPlainTextEdit" name="reportPlainTextEdit">
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="clipboardPushButton">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="text">
-            <string>Copy to clipboard</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="exportGridPushButton">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>Export the grid as a point cloud
-(warning, the points heights will be the difference of altitude!)</string>
-           </property>
-           <property name="text">
-            <string>Export grid as a cloud</string>
-           </property>
-          </widget>
-         </item>
-         <item>
+         <item row="4" column="0">
           <widget class="QWidget" name="widget" native="true">
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <property name="leftMargin">
@@ -478,24 +451,45 @@ You should fill the empty cells...</string>
             <item>
              <widget class="QLabel" name="label">
               <property name="text">
-               <string>Num. precision</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="precisionSpinBox">
-              <property name="toolTip">
-               <string>Numerical precision (output measurements, etc.)</string>
-              </property>
-              <property name="maximum">
-               <number>12</number>
-              </property>
-              <property name="value">
-               <number>3</number>
+               <string>数据精度：</string>
               </property>
              </widget>
             </item>
            </layout>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QPushButton" name="exportGridPushButton">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>Export the grid as a point cloud
+(warning, the points heights will be the difference of altitude!)</string>
+           </property>
+           <property name="text">
+            <string>导出格网</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" colspan="2">
+          <widget class="QPlainTextEdit" name="reportPlainTextEdit">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QSpinBox" name="precisionSpinBox">
+           <property name="toolTip">
+            <string>Numerical precision (output measurements, etc.)</string>
+           </property>
+           <property name="maximum">
+            <number>12</number>
+           </property>
+           <property name="value">
+            <number>3</number>
+           </property>
           </widget>
          </item>
         </layout>

@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -11,7 +11,7 @@
 //#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 //#  GNU General Public License for more details.                          #
 //#                                                                        #
-//#          COPYRIGHT: CloudCompare project                               #
+//#          COPYRIGHT: Zoomlion project                               #
 //#                                                                        #
 //##########################################################################
 
@@ -118,8 +118,8 @@ ccTranslationManager::LanguageList ccTranslationManager::availableLanguages(
 
   // e.g. File name is "CloudCompare_es_AR.qm"
   //	Regexp grabs "es_AR" in the var "localeStr" (used to set our locale
-  //using QLocale) 	and if there is a country code (e.g. "AR"), capture that in
-  //"countryCode" (used for menu item)
+  // using QLocale) 	and if there is a country code (e.g. "AR"), capture that
+  // in "countryCode" (used for menu item)
   QRegularExpression regExp(
       QStringLiteral("%1_(?<localeStr>.{2}(_(?<countryCode>.{2}))?).*.qm")
           .arg(appName));

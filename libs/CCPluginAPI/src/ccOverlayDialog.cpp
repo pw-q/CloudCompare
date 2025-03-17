@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,152 +17,123 @@
 
 #include "ccOverlayDialog.h"
 
-//qCC_glWindow
+// qCC_glWindow
 #include <ccGLWindowInterface.h>
 
-//qCC_db
+// qCC_db
 #include <ccLog.h>
 
-//Qt
+// Qt
 #include <QApplication>
 #include <QEvent>
 #include <QKeyEvent>
 
-//system
+// system
 #include <cassert>
 
-ccOverlayDialog::ccOverlayDialog(QWidget* parent/*=nullptr*/, Qt::WindowFlags flags/*=Qt::FramelessWindowHint | Qt::Tool*/)
-	: QDialog(parent, flags)
-	, m_associatedWin(nullptr)
-	, m_processing(false)
-{
+ccOverlayDialog::ccOverlayDialog(
+    QWidget *parent /*=nullptr*/,
+    Qt::WindowFlags flags /*=Qt::FramelessWindowHint | Qt::Tool*/)
+    : QDialog(parent, flags), m_associatedWin(nullptr), m_processing(false) {}
+
+ccOverlayDialog::~ccOverlayDialog() { onLinkedWindowDeletion(); }
+
+bool ccOverlayDialog::linkWith(ccGLWindowInterface *win) {
+  if (m_processing) {
+    ccLog::Warning("[ccOverlayDialog] Can't change associated window while "
+                   "running/displayed!");
+    return false;
+  }
+
+  // same dialog? nothing to do
+  if (m_associatedWin == win) {
+    return true;
+  }
+
+  if (m_associatedWin) {
+    // we automatically detach the former dialog
+    {
+      QWidgetList topWidgets = QApplication::topLevelWidgets();
+      foreach (QWidget *widget, topWidgets) { widget->removeEventFilter(this); }
+    }
+    m_associatedWin->signalEmitter()->disconnect(this);
+    m_associatedWin = nullptr;
+  }
+
+  m_associatedWin = win;
+  if (m_associatedWin) {
+    QWidgetList topWidgets = QApplication::topLevelWidgets();
+    foreach (QWidget *widget, topWidgets) { widget->installEventFilter(this); }
+    connect(m_associatedWin->signalEmitter(),
+            &ccGLWindowSignalEmitter::aboutToClose, this,
+            &ccOverlayDialog::onLinkedWindowDeletion);
+  }
+
+  return true;
 }
 
-ccOverlayDialog::~ccOverlayDialog()
-{
-	onLinkedWindowDeletion();
+void ccOverlayDialog::onLinkedWindowDeletion(
+    ccGLWindowInterface *object /*=nullptr*/) {
+  if (m_associatedWin == object) {
+    if (m_processing) {
+      stop(false);
+    }
+
+    linkWith(nullptr);
+  } else {
+    assert(false);
+  }
 }
 
-bool ccOverlayDialog::linkWith(ccGLWindowInterface* win)
-{
-	if (m_processing)
-	{
-		ccLog::Warning("[ccOverlayDialog] Can't change associated window while running/displayed!");
-		return false;
-	}
+bool ccOverlayDialog::start() {
+  if (m_processing)
+    return false;
 
-	//same dialog? nothing to do
-	if (m_associatedWin == win)
-	{
-		return true;
-	}
+  m_processing = true;
 
-	if (m_associatedWin)
-	{
-		//we automatically detach the former dialog
-		{
-			QWidgetList topWidgets = QApplication::topLevelWidgets();
-			foreach(QWidget* widget, topWidgets)
-			{
-				widget->removeEventFilter(this);
-			}
-		}
-		m_associatedWin->signalEmitter()->disconnect(this);
-		m_associatedWin = nullptr;
-	}
+  // auto-show
+  show();
 
-	m_associatedWin = win;
-	if (m_associatedWin)
-	{
-		QWidgetList topWidgets = QApplication::topLevelWidgets();
-		foreach(QWidget* widget, topWidgets)
-		{
-			widget->installEventFilter(this);
-		}
-		connect(m_associatedWin->signalEmitter(), &ccGLWindowSignalEmitter::aboutToClose, this, &ccOverlayDialog::onLinkedWindowDeletion);
-	}
-
-	return true;
+  return true;
 }
 
-void ccOverlayDialog::onLinkedWindowDeletion(ccGLWindowInterface* object/*=nullptr*/)
-{
-	if (m_associatedWin == object)
-	{
-		if (m_processing)
-		{
-			stop(false);
-		}
+void ccOverlayDialog::stop(bool accepted) {
+  m_processing = false;
 
-		linkWith(nullptr);
-	}
-	else
-	{
-		assert(false);
-	}
+  // auto-hide
+  hide();
+
+  linkWith(nullptr);
+
+  Q_EMIT processFinished(accepted);
 }
 
-bool ccOverlayDialog::start()
-{
-	if (m_processing)
-		return false;
+void ccOverlayDialog::reject() {
+  QDialog::reject();
 
-	m_processing = true;
-
-	//auto-show
-	show();
-
-	return true;
+  stop(false);
 }
 
-void ccOverlayDialog::stop(bool accepted)
-{
-	m_processing = false;
-
-	//auto-hide
-	hide();
-
-	linkWith(nullptr);
-
-	Q_EMIT processFinished(accepted);
+void ccOverlayDialog::addOverriddenShortcut(Qt::Key key) {
+  m_overriddenKeys.push_back(key);
 }
 
-void ccOverlayDialog::reject()
-{
-	QDialog::reject();
+bool ccOverlayDialog::eventFilter(QObject *obj, QEvent *e) {
+  if (e->type() == QEvent::KeyPress) {
+    QKeyEvent *keyEvent = static_cast<QKeyEvent *>(e);
 
-	stop(false);
-}
+    if (m_overriddenKeys.contains(keyEvent->key())) {
+      Q_EMIT shortcutTriggered(keyEvent->key());
+      return true;
+    } else {
+      return QDialog::eventFilter(obj, e);
+    }
+  } else {
+    if (e->type() == QEvent::Show) {
+      Q_EMIT shown();
+    }
 
-void ccOverlayDialog::addOverriddenShortcut(Qt::Key key)
-{
-	m_overriddenKeys.push_back(key);
-}
-
-bool ccOverlayDialog::eventFilter(QObject *obj, QEvent *e)
-{
-	if (e->type() == QEvent::KeyPress)
-	{
-		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
-
-		if (m_overriddenKeys.contains(keyEvent->key()))
-		{
-			Q_EMIT shortcutTriggered(keyEvent->key());
-			return true;
-		}
-		else
-		{
-			return QDialog::eventFilter(obj, e);
-		}
-	}
-	else
-	{
-		if (e->type() == QEvent::Show)
-		{
-			Q_EMIT shown();
-		}
-		
-		// standard event processing
-		return QDialog::eventFilter(obj, e);
-	}
+    // standard event processing
+    return QDialog::eventFilter(obj, e);
+  }
 }

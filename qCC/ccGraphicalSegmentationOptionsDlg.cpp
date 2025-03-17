@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -11,45 +11,43 @@
 //#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 //#  GNU General Public License for more details.                          #
 //#                                                                        #
-//#                   COPYRIGHT: CloudCompare project                      #
+//#                   COPYRIGHT: Zoomlion project                      #
 //#                                                                        #
 //##########################################################################
 
 // Local
 #include "ccGraphicalSegmentationOptionsDlg.h"
 
-//Qt
+// Qt
 #include <QSettings>
 
-ccGraphicalSegmentationOptionsDlg::ccGraphicalSegmentationOptionsDlg(const QString windowTitle/*=QString()*/,
-	QWidget* parent/*=nullptr*/)
-	: QDialog(parent, Qt::Tool)
-	, Ui::GraphicalSegmentationOptionsDlg()
-{
-	setupUi(this);
+ccGraphicalSegmentationOptionsDlg::ccGraphicalSegmentationOptionsDlg(
+    const QString windowTitle /*=QString()*/, QWidget *parent /*=nullptr*/)
+    : QDialog(parent, Qt::Tool), Ui::GraphicalSegmentationOptionsDlg() {
+  setupUi(this);
 
-	QSettings settings;
-	settings.beginGroup(SegmentationToolOptionsKey());
-	QString remainingSuffix = settings.value(RemainingSuffixKey(), ".remaining").toString();
-	QString segmentedSuffix = settings.value(SegmentedSuffixKey(), ".segmented").toString();
-	settings.endGroup();
+  QSettings settings;
+  settings.beginGroup(SegmentationToolOptionsKey());
+  QString remainingSuffix =
+      settings.value(RemainingSuffixKey(), ".remaining").toString();
+  QString segmentedSuffix =
+      settings.value(SegmentedSuffixKey(), ".segmented").toString();
+  settings.endGroup();
 
-	remainingTextLineEdit->setText(remainingSuffix);
-	segmentedTextLineEdit->setText(segmentedSuffix);
+  remainingTextLineEdit->setText(remainingSuffix);
+  segmentedTextLineEdit->setText(segmentedSuffix);
 
-	if (!windowTitle.isEmpty())
-	{
-		setWindowTitle(windowTitle);
-	}
+  if (!windowTitle.isEmpty()) {
+    setWindowTitle(windowTitle);
+  }
 }
 
-void ccGraphicalSegmentationOptionsDlg::accept()
-{
-	QSettings settings;
-	settings.beginGroup(SegmentationToolOptionsKey());
-	settings.setValue(RemainingSuffixKey(), remainingTextLineEdit->text());
-	settings.setValue(SegmentedSuffixKey(), segmentedTextLineEdit->text());
-	settings.endGroup();
+void ccGraphicalSegmentationOptionsDlg::accept() {
+  QSettings settings;
+  settings.beginGroup(SegmentationToolOptionsKey());
+  settings.setValue(RemainingSuffixKey(), remainingTextLineEdit->text());
+  settings.setValue(SegmentedSuffixKey(), segmentedTextLineEdit->text());
+  settings.endGroup();
 
-	QDialog::accept();
+  QDialog::accept();
 }

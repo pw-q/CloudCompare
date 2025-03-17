@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -128,6 +128,8 @@ void ccTracePolylineTool::hidePara() {
   m_ui->snapSizeSpinBox->setValue(1);
   m_ui->snapSizeSpinBox->setVisible(false);
   m_ui->label_2->setVisible(false);
+  m_ui->comboType->setCurrentIndex(1);
+  this->adjustSize();
 }
 
 void ccTracePolylineTool::onShortcutTriggered(int key) {

@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                       CLOUDCOMPARE PLUGIN: qPCL                        #
+//#                       ZOOMLION PLUGIN: qPCL                        #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,18 +17,14 @@
 //
 #include "SIFTExtractDlg.h"
 
-SIFTExtractDlg::SIFTExtractDlg(QWidget* parent)
-	: QDialog(parent, Qt::Tool)
-	, Ui::SIFTExtractDlg()
-{
-	setupUi(this);
+SIFTExtractDlg::SIFTExtractDlg(QWidget *parent)
+    : QDialog(parent, Qt::Tool), Ui::SIFTExtractDlg() {
+  setupUi(this);
 }
 
-void SIFTExtractDlg::updateComboBox(const QStringList& fields)
-{
-	intensityCombo->clear();
-	for (QString field : fields)
-	{
-		intensityCombo->addItem(field);
-	}
+void SIFTExtractDlg::updateComboBox(const QStringList &fields) {
+  intensityCombo->clear();
+  for (QString field : fields) {
+    intensityCombo->addItem(field);
+  }
 }

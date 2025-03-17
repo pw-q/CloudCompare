@@ -200,7 +200,7 @@ struct QCC_DB_LIB_API ccRasterGrid {
     FILL_CUSTOM_HEIGHT = 3,
     FILL_AVERAGE_HEIGHT = 4,
     INTERPOLATE_DELAUNAY = 5,
-    KRIGING = 6,
+    INTERPOLATE_KRIGING = 6,
   };
 
   //! Converts the empty cells fill option to the corresponding interpolation

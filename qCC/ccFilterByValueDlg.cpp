@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,22 +17,20 @@
 
 #include "ccFilterByValueDlg.h"
 
-ccFilterByValueDlg::ccFilterByValueDlg(	double minRange,
-										double maxRange,
-										double minVal/*=-1.0e9*/,
-										double maxVal/*=1.0e9*/,
-										QWidget* parent/*=nullptr*/)
-	: QDialog(parent, Qt::Tool)
-	, Ui::FilterByValueDialog()
-	, m_mode(CANCEL)
-{
-	setupUi(this);
+ccFilterByValueDlg::ccFilterByValueDlg(double minRange, double maxRange,
+                                       double minVal /*=-1.0e9*/,
+                                       double maxVal /*=1.0e9*/,
+                                       QWidget *parent /*=nullptr*/)
+    : QDialog(parent, Qt::Tool), Ui::FilterByValueDialog(), m_mode(CANCEL) {
+  setupUi(this);
 
-	minDoubleSpinBox->setRange(minVal, maxVal);
-	maxDoubleSpinBox->setRange(minVal, maxVal);
-	minDoubleSpinBox->setValue(minRange);
-	maxDoubleSpinBox->setValue(maxRange);
+  minDoubleSpinBox->setRange(minVal, maxVal);
+  maxDoubleSpinBox->setRange(minVal, maxVal);
+  minDoubleSpinBox->setValue(minRange);
+  maxDoubleSpinBox->setValue(maxRange);
 
-	connect(exportPushButton, &QAbstractButton::clicked, this, &ccFilterByValueDlg::onExport);
-	connect(splitPushButton, &QAbstractButton::clicked, this, &ccFilterByValueDlg::onSplit);
+  connect(exportPushButton, &QAbstractButton::clicked, this,
+          &ccFilterByValueDlg::onExport);
+  connect(splitPushButton, &QAbstractButton::clicked, this,
+          &ccFilterByValueDlg::onSplit);
 }

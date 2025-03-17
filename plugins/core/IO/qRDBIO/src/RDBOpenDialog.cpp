@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                       CLOUDCOMPARE PLUGIN: qRDBIO                      #
+//#                       ZOOMLION PLUGIN: qRDBIO                      #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,15 +17,12 @@
 
 #include "RDBOpenDialog.h"
 
-//Qt
+// Qt
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QSettings>
 
-RDBOpenDialog::RDBOpenDialog(QWidget* parent/*=nullptr*/)
-	: QDialog(parent)
-	, Ui::RDBOpenDlg()
-{
-	setupUi(this);
+RDBOpenDialog::RDBOpenDialog(QWidget *parent /*=nullptr*/)
+    : QDialog(parent), Ui::RDBOpenDlg() {
+  setupUi(this);
 }
-

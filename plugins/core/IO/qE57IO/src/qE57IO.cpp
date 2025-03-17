@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -11,7 +11,7 @@
 //#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 //#  GNU General Public License for more details.                          #
 //#                                                                        #
-//#          COPYRIGHT: CloudCompare project                               #
+//#          COPYRIGHT: Zoomlion project                               #
 //#                                                                        #
 //##########################################################################
 
@@ -19,19 +19,11 @@
 
 #include "E57Filter.h"
 
+qE57IO::qE57IO(QObject *parent)
+    : QObject(parent), ccIOPluginInterface(":/CC/plugin/qE57IO/info.json") {}
 
-qE57IO::qE57IO( QObject *parent )
-	: QObject( parent )
-	, ccIOPluginInterface( ":/CC/plugin/qE57IO/info.json" )
-{
-}
+void qE57IO::registerCommands(ccCommandLineInterface *cmd) { Q_UNUSED(cmd); }
 
-void qE57IO::registerCommands( ccCommandLineInterface *cmd )
-{
-	Q_UNUSED( cmd );
-}
-
-ccIOPluginInterface::FilterList qE57IO::getFilters()
-{
-	return { FileIOFilter::Shared( new E57Filter ) };
+ccIOPluginInterface::FilterList qE57IO::getFilters() {
+  return {FileIOFilter::Shared(new E57Filter)};
 }

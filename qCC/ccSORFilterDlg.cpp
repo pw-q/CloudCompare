@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -18,35 +18,21 @@
 #include "ccSORFilterDlg.h"
 #include "ui_sorFilterDlg.h"
 
-
-ccSORFilterDlg::ccSORFilterDlg(QWidget* parent/*=nullptr*/)
-	: QDialog(parent, Qt::Tool)
-	, m_ui( new Ui::SorFilterDialog )
-{
-	m_ui->setupUi(this);
+ccSORFilterDlg::ccSORFilterDlg(QWidget *parent /*=nullptr*/)
+    : QDialog(parent, Qt::Tool), m_ui(new Ui::SorFilterDialog) {
+  m_ui->setupUi(this);
 }
 
-ccSORFilterDlg::~ccSORFilterDlg()
-{
-	delete m_ui;
+ccSORFilterDlg::~ccSORFilterDlg() { delete m_ui; }
+
+int ccSORFilterDlg::KNN() const { return m_ui->knnSpinBox->value(); }
+
+void ccSORFilterDlg::setKNN(int knn) { m_ui->knnSpinBox->setValue(knn); }
+
+double ccSORFilterDlg::nSigma() const {
+  return m_ui->nSigmaDoubleSpinBox->value();
 }
 
-int ccSORFilterDlg::KNN() const
-{
-	return m_ui->knnSpinBox->value();
-}
-
-void ccSORFilterDlg::setKNN(int knn)
-{
-	m_ui->knnSpinBox->setValue( knn );
-}
-
-double ccSORFilterDlg::nSigma() const
-{
-	return m_ui->nSigmaDoubleSpinBox->value();
-}
-
-void ccSORFilterDlg::setNSigma(double nSigma)
-{
-	m_ui->nSigmaDoubleSpinBox->setValue( nSigma );
+void ccSORFilterDlg::setNSigma(double nSigma) {
+  m_ui->nSigmaDoubleSpinBox->setValue(nSigma);
 }

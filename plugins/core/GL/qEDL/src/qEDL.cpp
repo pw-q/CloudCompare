@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                       CLOUDCOMPARE PLUGIN: qEDL                        #
+//#                       ZOOMLION PLUGIN: qEDL                        #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -19,13 +19,7 @@
 
 #include "qEDL.h"
 
-qEDL::qEDL( QObject *parent )
-	: QObject( parent )
-	, ccGLPluginInterface( ":/CC/plugin/qEDL/info.json" )
-{
-}
+qEDL::qEDL(QObject *parent)
+    : QObject(parent), ccGLPluginInterface(":/CC/plugin/qEDL/info.json") {}
 
-ccGlFilter* qEDL::getFilter()
-{
-	return new ccEDLFilter;
-}
+ccGlFilter *qEDL::getFilter() { return new ccEDLFilter; }

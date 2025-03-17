@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -165,7 +165,7 @@ ccRasterGrid::InterpolationTypeFromEmptyCellFillOption(
   switch (option) {
   case INTERPOLATE_DELAUNAY:
     return InterpolationType::DELAUNAY;
-  case KRIGING:
+  case INTERPOLATE_KRIGING:
     return InterpolationType::KRIGING;
   default:
     break;
@@ -969,7 +969,7 @@ bool ccRasterGrid::fillGridCellsWithKriging(
   const unsigned char Y = (X == 2 ? 0 : X + 1);
 
   if (nonEmptyCellCount == 0) {
-    ccLog::Warning("Not enough non-empty cells to perform Kriging");
+    ccLog::Warning("没有足够的已知点");
     return false;
   }
 
@@ -978,14 +978,14 @@ bool ccRasterGrid::fillGridCellsWithKriging(
   try {
     dataPoints.reserve(nonEmptyCellCount);
   } catch (const std::bad_alloc &) {
-    ccLog::Error(QObject::tr("Kriging: not enough memory"));
+    ccLog::Error(QObject::tr("Kriging: 内存不足"));
     return false;
   }
 
   if (progressDialog) {
     progressDialog->setMethodTitle(
         QObject::tr("Kriging").toStdString().c_str());
-    progressDialog->setInfo(QObject::tr("Non-empty cells: %1\nGrid: %2 x %3")
+    progressDialog->setInfo(QObject::tr("非空格网: %1\nGrid: %2 x %3")
                                 .arg(nonEmptyCellCount)
                                 .arg(width)
                                 .arg(height));
@@ -1026,7 +1026,7 @@ bool ccRasterGrid::fillGridCellsWithKriging(
 
   auto *context = kriging.createOrdinaryKrigeContext(knn);
   if (!context) {
-    ccLog::Error(QObject::tr("Failed to initialize the Kriging algorithm"));
+    ccLog::Error(QObject::tr("无法初始化克里金"));
     return false;
   }
 
@@ -1217,7 +1217,8 @@ void ccRasterGrid::fillEmptyCells(EmptyCellFillOption fillEmptyCellsStrategy,
   case FILL_AVERAGE_HEIGHT:
     defaultHeight = meanHeight;
     break;
-  case KRIGING:
+  case INTERPOLATE_KRIGING:
+    defaultHeight = customCellHeight;
     // nothing to do
     return;
   default:

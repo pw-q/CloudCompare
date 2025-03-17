@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                    CLOUDCOMPARE PLUGIN: qLasFWFIO                      #
+//#                    ZOOMLION PLUGIN: qLasFWFIO                      #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,32 +17,28 @@
 
 #include "qLASFWFIO.h"
 
-//local
+// local
 #include "LASFWFFilter.h"
 #include "qLASFWFIOCommands.h"
 
-//Qt
+// Qt
 #include <QtPlugin>
 
 qLASFWFIO::qLASFWFIO(QObject *parent)
-    : QObject(parent)
-    , ccIOPluginInterface(":/CC/plugin/qLASFWFIO/info.json")
-{
+    : QObject(parent), ccIOPluginInterface(":/CC/plugin/qLASFWFIO/info.json") {}
+
+ccIOPluginInterface::FilterList qLASFWFIO::getFilters() {
+  return {FileIOFilter::Shared(new LASFWFFilter)};
 }
 
-ccIOPluginInterface::FilterList qLASFWFIO::getFilters()
-{
-	return { FileIOFilter::Shared(new LASFWFFilter) };
-}
+void qLASFWFIO::registerCommands(ccCommandLineInterface *cmd) {
+  if (!cmd) {
+    assert(false);
+    return;
+  }
 
-void qLASFWFIO::registerCommands(ccCommandLineInterface* cmd)
-{
-	if (!cmd)
-	{
-		assert(false);
-		return;
-	}
-
-	cmd->registerCommand(ccCommandLineInterface::Command::Shared(new CommandLoadLASFWF));
-	cmd->registerCommand(ccCommandLineInterface::Command::Shared(new CommandSaveLASFWF));
+  cmd->registerCommand(
+      ccCommandLineInterface::Command::Shared(new CommandLoadLASFWF));
+  cmd->registerCommand(
+      ccCommandLineInterface::Command::Shared(new CommandSaveLASFWF));
 }

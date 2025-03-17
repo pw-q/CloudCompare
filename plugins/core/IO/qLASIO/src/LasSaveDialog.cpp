@@ -1,6 +1,6 @@
 // ##########################################################################
 // #                                                                        #
-// #                CLOUDCOMPARE PLUGIN: LAS-IO Plugin                      #
+// #                ZOOMLION PLUGIN: LAS-IO Plugin                      #
 // #                                                                        #
 // #  This program is free software; you can redistribute it and/or modify  #
 // #  it under the terms of the GNU General Public License as published by  #
@@ -178,8 +178,7 @@ LasSaveDialog::LasSaveDialog(ccPointCloud* cloud, QWidget* parent)
 	connect(saveLeftoverSFsAsExtraVLRCheckBox,
 	        &QCheckBox::stateChanged,
 	        this,
-	        [this](bool state)
-	        {
+	        [this](bool state) {
 		        if (state)
 		        {
 			        assignLeftoverScalarFieldsAsExtra();
@@ -346,8 +345,7 @@ void LasSaveDialog::handleComboBoxChange(int index)
 	size_t senderIndex = std::distance(m_scalarFieldMapping.begin(),
 	                                   std::find_if(m_scalarFieldMapping.begin(),
 	                                                m_scalarFieldMapping.end(),
-	                                                [senderObject](const std::pair<MappingLabel*, QComboBox*>& pair)
-	                                                { return pair.second == senderObject; }));
+	                                                [senderObject](const std::pair<MappingLabel*, QComboBox*>& pair) { return pair.second == senderObject; }));
 
 	if (qobject_cast<QComboBox*>(senderObject)->itemText(index).isEmpty())
 	{
@@ -384,8 +382,7 @@ void LasSaveDialog::handleComboBoxChange(int index)
 
 	size_t numWarnings = std::count_if(m_scalarFieldMapping.begin(),
 	                                   m_scalarFieldMapping.end(),
-	                                   [](const std::pair<MappingLabel*, QComboBox*>& pair)
-	                                   { return pair.first->hasWarning(); });
+	                                   [](const std::pair<MappingLabel*, QComboBox*>& pair) { return pair.first->hasWarning(); });
 
 	if (numWarnings != 0)
 	{
@@ -673,8 +670,7 @@ void LasSaveDialog::assignLeftoverScalarFieldsAsExtra()
 	unassignDefaultFields();
 
 	// We use lambda for clarity
-	auto isAssignedToStandardField = [this](const std::string& sfName) -> bool
-	{
+	auto isAssignedToStandardField = [this](const std::string& sfName) -> bool {
 		for (const auto& item : m_scalarFieldMapping)
 		{
 			if (item.second->currentIndex() > 0)
@@ -689,8 +685,7 @@ void LasSaveDialog::assignLeftoverScalarFieldsAsExtra()
 		return false;
 	};
 
-	auto isAssignedAsExtraField = [this](const std::string& sfName)
-	{
+	auto isAssignedAsExtraField = [this](const std::string& sfName) {
 		int esfCount = extraScalarFieldsLayout->count();
 		for (int i = 0; i < esfCount; ++i)
 		{

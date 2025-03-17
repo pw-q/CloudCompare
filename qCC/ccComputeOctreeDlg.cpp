@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,66 +17,58 @@
 
 #include "ccComputeOctreeDlg.h"
 
-//Local
+// Local
 #include "ccBoundingBoxEditorDlg.h"
 
-//qCC_db
+// qCC_db
 #include <ccOctree.h>
 
-ccComputeOctreeDlg::ccComputeOctreeDlg(const ccBBox& baseBBox, double minCellSize, QWidget* parent/*=nullptr*/)
-	: QDialog(parent)
-	, Ui::ComputeOctreeDialog()
-	, m_bbEditorDlg(nullptr)
-{
-	setupUi(this);
+ccComputeOctreeDlg::ccComputeOctreeDlg(const ccBBox &baseBBox,
+                                       double minCellSize,
+                                       QWidget *parent /*=nullptr*/)
+    : QDialog(parent), Ui::ComputeOctreeDialog(), m_bbEditorDlg(nullptr) {
+  setupUi(this);
 
-	headerLabel->setText(QString("Max subdivision level: %1").arg(ccOctree::MAX_OCTREE_LEVEL));
+  headerLabel->setText(
+      QString("Max subdivision level: %1").arg(ccOctree::MAX_OCTREE_LEVEL));
 
-	//minimum cell size
-	if (minCellSize > 0.0)
-	{
-		cellSizeDoubleSpinBox->setMinimum(minCellSize);
-		cellSizeDoubleSpinBox->setMaximum(1.0e9);
-	}
-	else
-	{
-		ccLog::Warning("[ccComputeOctreeDlg] Invalid minimum cell size specified!");
-		cellSizeRadioButton->setEnabled(false);	
-	}
+  // minimum cell size
+  if (minCellSize > 0.0) {
+    cellSizeDoubleSpinBox->setMinimum(minCellSize);
+    cellSizeDoubleSpinBox->setMaximum(1.0e9);
+  } else {
+    ccLog::Warning("[ccComputeOctreeDlg] Invalid minimum cell size specified!");
+    cellSizeRadioButton->setEnabled(false);
+  }
 
-	//custom bbox editor
-	if (baseBBox.isValid())
-	{
-		m_bbEditorDlg = new ccBoundingBoxEditorDlg(false, false, this);
-		m_bbEditorDlg->setBaseBBox(baseBBox,true);
-		m_bbEditorDlg->forceKeepSquare(true);
-		connect(customBBToolButton, &QAbstractButton::clicked, m_bbEditorDlg, &ccBoundingBoxEditorDlg::exec);
-	}
-	else
-	{
-		ccLog::Warning("[ccComputeOctreeDlg] Invalid base bounding-box specified!");
-		customBBRadioButton->setEnabled(false);
-	}
+  // custom bbox editor
+  if (baseBBox.isValid()) {
+    m_bbEditorDlg = new ccBoundingBoxEditorDlg(false, false, this);
+    m_bbEditorDlg->setBaseBBox(baseBBox, true);
+    m_bbEditorDlg->forceKeepSquare(true);
+    connect(customBBToolButton, &QAbstractButton::clicked, m_bbEditorDlg,
+            &ccBoundingBoxEditorDlg::exec);
+  } else {
+    ccLog::Warning("[ccComputeOctreeDlg] Invalid base bounding-box specified!");
+    customBBRadioButton->setEnabled(false);
+  }
 }
 
-ccComputeOctreeDlg::ComputationMode ccComputeOctreeDlg::getMode() const
-{
-	//defaultRadioButton
-	if (cellSizeRadioButton->isChecked())
-		return MIN_CELL_SIZE;
-	else if (customBBRadioButton->isChecked())
-		return CUSTOM_BBOX;
+ccComputeOctreeDlg::ComputationMode ccComputeOctreeDlg::getMode() const {
+  // defaultRadioButton
+  if (cellSizeRadioButton->isChecked())
+    return MIN_CELL_SIZE;
+  else if (customBBRadioButton->isChecked())
+    return CUSTOM_BBOX;
 
-	assert(defaultRadioButton->isChecked());
-	return DEFAULT;
+  assert(defaultRadioButton->isChecked());
+  return DEFAULT;
 }
 
-double ccComputeOctreeDlg::getMinCellSize() const
-{
-	return cellSizeDoubleSpinBox->value();
+double ccComputeOctreeDlg::getMinCellSize() const {
+  return cellSizeDoubleSpinBox->value();
 }
 
-ccBBox ccComputeOctreeDlg::getCustomBBox() const
-{
-	return (m_bbEditorDlg ? m_bbEditorDlg->getBox() : ccBBox());
+ccBBox ccComputeOctreeDlg::getCustomBBox() const {
+  return (m_bbEditorDlg ? m_bbEditorDlg->getBox() : ccBBox());
 }

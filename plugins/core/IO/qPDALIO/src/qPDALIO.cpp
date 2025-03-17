@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -11,7 +11,7 @@
 //#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 //#  GNU General Public License for more details.                          #
 //#                                                                        #
-//#          COPYRIGHT: CloudCompare project                               #
+//#          COPYRIGHT: Zoomlion project                               #
 //#                                                                        #
 //##########################################################################
 
@@ -19,19 +19,11 @@
 
 #include "LASFilter.h"
 
+qPDALIO::qPDALIO(QObject *parent)
+    : QObject(parent), ccIOPluginInterface(":/CC/plugin/qPDALIO/info.json") {}
 
-qPDALIO::qPDALIO( QObject *parent ) :
-    QObject( parent ),
-    ccIOPluginInterface( ":/CC/plugin/qPDALIO/info.json" )
-{
-}
+void qPDALIO::registerCommands(ccCommandLineInterface *cmd) { Q_UNUSED(cmd); }
 
-void qPDALIO::registerCommands( ccCommandLineInterface *cmd )
-{
-	Q_UNUSED( cmd );
-}
-
-ccIOPluginInterface::FilterList qPDALIO::getFilters()
-{
-	return { FileIOFilter::Shared( new LASFilter ) };
+ccIOPluginInterface::FilterList qPDALIO::getFilters() {
+  return {FileIOFilter::Shared(new LASFilter)};
 }

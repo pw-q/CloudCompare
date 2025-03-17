@@ -510,7 +510,7 @@
     </widget>
     <widget class="QMenu" name="menuTrace">
      <property name="title">
-      <string>Trace</string>
+      <string>绘制</string>
      </property>
      <addaction name="actionTracePolyline"/>
     </widget>
@@ -2796,7 +2796,7 @@ QTreeView::branch:open:has-children:has-siblings  {
   </action>
   <action name="actionCompute2HalfDimVolume">
    <property name="text">
-    <string>Compute 2.5D volume</string>
+    <string>体积计算</string>
    </property>
   </action>
   <action name="actionExclusiveFullScreen">
@@ -2845,10 +2845,10 @@ QTreeView::branch:open:has-children:has-siblings  {
      <normaloff>:/CC/images/ccTracePolyline.png</normaloff>:/CC/images/ccTracePolyline.png</iconset>
    </property>
    <property name="text">
-    <string>Trace Polyline</string>
+    <string>绘制多段线</string>
    </property>
    <property name="toolTip">
-    <string>Trace a polyline by point picking</string>
+    <string>选多点绘制多段线</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>

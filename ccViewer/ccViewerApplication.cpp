@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -11,7 +11,7 @@
 //#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 //#  GNU General Public License for more details.                          #
 //#                                                                        #
-//#          COPYRIGHT: CloudCompare project                               #
+//#          COPYRIGHT: Zoomlion project                               #
 //#                                                                        #
 //##########################################################################
 
@@ -21,41 +21,34 @@
 #include <QFileOpenEvent>
 #endif
 
-#include "ccviewer.h"
 #include "ccViewerApplication.h"
+#include "ccviewer.h"
 
-
-ccViewerApplication::ccViewerApplication( int &argc, char **argv, bool isCommandLine )
-	: ccApplicationBase( argc, argv, isCommandLine, QString( "1.41 (%1)" ).arg(__DATE__))
-{
-	setApplicationName( "CloudCompareViewer" );
+ccViewerApplication::ccViewerApplication(int &argc, char **argv,
+                                         bool isCommandLine)
+    : ccApplicationBase(argc, argv, isCommandLine,
+                        QString("1.41 (%1)").arg(__DATE__)) {
+  setApplicationName("Viewer");
 }
 
-void ccViewerApplication::setViewer(ccViewer *inViewer)
-{
-	mViewer = inViewer;
-}
+void ccViewerApplication::setViewer(ccViewer *inViewer) { mViewer = inViewer; }
 
-bool ccViewerApplication::event(QEvent *inEvent)
-{
+bool ccViewerApplication::event(QEvent *inEvent) {
 #ifdef Q_OS_MAC
-	switch ( inEvent->type() )
-	{
-		case QEvent::FileOpen:
-		{			
-			if ( mViewer == nullptr )
-			{
-				return false;
-			}
-			
-			mViewer->addToDB( { static_cast<QFileOpenEvent *>(inEvent)->file() } );
-			return true;
-		}
-			
-		default:
-			break;
-	}
+  switch (inEvent->type()) {
+  case QEvent::FileOpen: {
+    if (mViewer == nullptr) {
+      return false;
+    }
+
+    mViewer->addToDB({static_cast<QFileOpenEvent *>(inEvent)->file()});
+    return true;
+  }
+
+  default:
+    break;
+  }
 #endif
 
-	return ccApplicationBase::event( inEvent );
+  return ccApplicationBase::event(inEvent);
 }

@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                    CLOUDCOMPARE PLUGIN: ccCompass                      #
+//#                    ZOOMLION PLUGIN: ccCompass                      #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,38 +17,29 @@
 
 #include "ccNote.h"
 
-//pass ctors straight to PointPair
-ccNote::ccNote(ccPointCloud* associatedCloud)
-	: ccPointPair(associatedCloud)
-{
-	updateMetadata();
+// pass ctors straight to PointPair
+ccNote::ccNote(ccPointCloud *associatedCloud) : ccPointPair(associatedCloud) {
+  updateMetadata();
 }
 
-ccNote::ccNote(ccPolyline* obj)
-	: ccPointPair(obj)
-{ 
-	updateMetadata();
+ccNote::ccNote(ccPolyline *obj) : ccPointPair(obj) { updateMetadata(); }
+
+void ccNote::updateMetadata() {
+  // add metadata tag defining the ccCompass class type
+  QVariantMap map;
+  map.insert("ccCompassType", "Note");
+  setMetaData(map, true);
+
+  // update drawing stuff
+  showNameIn3D(true);
+  setDefaultColor(ccColor::cyan);
+  setActiveColor(ccColor::red);
 }
 
-void ccNote::updateMetadata()
-{
-	//add metadata tag defining the ccCompass class type
-	QVariantMap map;
-	map.insert("ccCompassType", "Note");
-	setMetaData(map, true);
-
-	//update drawing stuff
-	showNameIn3D(true);
-	setDefaultColor(ccColor::cyan);
-	setActiveColor(ccColor::red);
-}
-
-//returns true if object is a lineation
-bool ccNote::isNote(ccHObject* object)
-{
-	if (object->hasMetaData("ccCompassType"))
-	{
-		return object->getMetaData("ccCompassType").toString().contains("Note");
-	}
-	return false;
+// returns true if object is a lineation
+bool ccNote::isNote(ccHObject *object) {
+  if (object->hasMetaData("ccCompassType")) {
+    return object->getMetaData("ccCompassType").toString().contains("Note");
+  }
+  return false;
 }

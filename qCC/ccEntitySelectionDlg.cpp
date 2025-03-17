@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -11,136 +11,119 @@
 //#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 //#  GNU General Public License for more details.                          #
 //#                                                                        #
-//#                    COPYRIGHT: CloudCompare project                     #
+//#                    COPYRIGHT: Zoomlion project                     #
 //#                                                                        #
 //##########################################################################
 
 #include "ccEntitySelectionDlg.h"
 
-//ui
+// ui
 #include <ui_entitySelectionDlg.h>
 
-//Qt
+// Qt
 #include <QDialog>
 #include <QListWidgetItem>
 
-ccEntitySelectionDialog::ccEntitySelectionDialog(	const ccHObject::Container& entities,
-													bool multiSelectionEnabled,
-													int defaultSelectedIndex/*=0*/,
-													QWidget* parent/*=nullptr*/,
-													QString labelStr/*=QString()*/)
-	: QDialog(parent, Qt::Tool)
-	, m_ui(new Ui_EntitySelectionDialog)
-{
-	m_ui->setupUi(this);
+ccEntitySelectionDialog::ccEntitySelectionDialog(
+    const ccHObject::Container &entities, bool multiSelectionEnabled,
+    int defaultSelectedIndex /*=0*/, QWidget *parent /*=nullptr*/,
+    QString labelStr /*=QString()*/)
+    : QDialog(parent, Qt::Tool), m_ui(new Ui_EntitySelectionDialog) {
+  m_ui->setupUi(this);
 
-	//multi-selection mode
-	if (multiSelectionEnabled)
-	{
-		m_ui->label->setText(tr("Select one or several entities:"));
-		m_ui->listWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
-		connect(m_ui->selectAllPushButton,  &QPushButton::clicked, this, &ccEntitySelectionDialog::selectAll);
-		connect(m_ui->selectNonePushButton, &QPushButton::clicked, this, &ccEntitySelectionDialog::selectNone);
-	}
-	else
-	{
-		m_ui->selectAllPushButton->setVisible(false);
-		m_ui->selectNonePushButton->setVisible(false);
-	}
+  // multi-selection mode
+  if (multiSelectionEnabled) {
+    m_ui->label->setText(tr("Select one or several entities:"));
+    m_ui->listWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    connect(m_ui->selectAllPushButton, &QPushButton::clicked, this,
+            &ccEntitySelectionDialog::selectAll);
+    connect(m_ui->selectNonePushButton, &QPushButton::clicked, this,
+            &ccEntitySelectionDialog::selectNone);
+  } else {
+    m_ui->selectAllPushButton->setVisible(false);
+    m_ui->selectNonePushButton->setVisible(false);
+  }
 
-	for (size_t i = 0; i < entities.size(); ++i)
-	{
-		//add one line per entity in the combo-box
-		m_ui->listWidget->insertItem(static_cast<int>(i), new QListWidgetItem(QString("[ID %1] %2").arg(entities[i]->getUniqueID()).arg(entities[i]->getName())));
-	}
-	
-	//default selection
-	if (defaultSelectedIndex >= 0 && static_cast<size_t>(defaultSelectedIndex) < entities.size())
-	{
-		m_ui->listWidget->setItemSelected(m_ui->listWidget->item(defaultSelectedIndex), true);
-	}
+  for (size_t i = 0; i < entities.size(); ++i) {
+    // add one line per entity in the combo-box
+    m_ui->listWidget->insertItem(
+        static_cast<int>(i),
+        new QListWidgetItem(QString("[ID %1] %2")
+                                .arg(entities[i]->getUniqueID())
+                                .arg(entities[i]->getName())));
+  }
 
-	//custom lalel
-	if (!labelStr.isNull())
-	{
-		m_ui->label->setText(labelStr);
-	}
+  // default selection
+  if (defaultSelectedIndex >= 0 &&
+      static_cast<size_t>(defaultSelectedIndex) < entities.size()) {
+    m_ui->listWidget->setItemSelected(
+        m_ui->listWidget->item(defaultSelectedIndex), true);
+  }
+
+  // custom lalel
+  if (!labelStr.isNull()) {
+    m_ui->label->setText(labelStr);
+  }
 }
 
-ccEntitySelectionDialog::~ccEntitySelectionDialog()
-{
-	if (m_ui)
-	{
-		delete m_ui;
-		m_ui = nullptr;
-	}
+ccEntitySelectionDialog::~ccEntitySelectionDialog() {
+  if (m_ui) {
+    delete m_ui;
+    m_ui = nullptr;
+  }
 }
 
-void ccEntitySelectionDialog::selectAll()
-{
-	m_ui->listWidget->selectAll();
+void ccEntitySelectionDialog::selectAll() { m_ui->listWidget->selectAll(); }
+
+void ccEntitySelectionDialog::selectNone() {
+  m_ui->listWidget->clearSelection();
 }
 
-void ccEntitySelectionDialog::selectNone()
-{
-	m_ui->listWidget->clearSelection();
+int ccEntitySelectionDialog::getSelectedIndex() const {
+  // get selected items
+  QList<QListWidgetItem *> list = m_ui->listWidget->selectedItems();
+  return list.empty() ? -1 : m_ui->listWidget->row(list.front());
 }
 
-int ccEntitySelectionDialog::getSelectedIndex() const
-{
-	//get selected items
-	QList<QListWidgetItem*> list = m_ui->listWidget->selectedItems();
-	return list.empty() ? -1 : m_ui->listWidget->row(list.front());
+void ccEntitySelectionDialog::getSelectedIndexes(
+    std::vector<int> &indexes) const {
+  // get selected items
+  QList<QListWidgetItem *> list = m_ui->listWidget->selectedItems();
+
+  try {
+    indexes.resize(static_cast<size_t>(list.size()));
+  } catch (const std::bad_alloc &) {
+    // not enough memory?!
+    return;
+  }
+
+  for (int i = 0; i < list.size(); ++i) {
+    indexes[i] = m_ui->listWidget->row(list[i]);
+  }
 }
 
-void ccEntitySelectionDialog::getSelectedIndexes(std::vector<int>& indexes) const
-{
-	//get selected items
-	QList<QListWidgetItem*> list = m_ui->listWidget->selectedItems();
+int ccEntitySelectionDialog::SelectEntity(const ccHObject::Container &entities,
+                                          int selectedIndex /*=0*/,
+                                          QWidget *parent /*=nullptr*/,
+                                          QString label /*=QString()*/) {
+  ccEntitySelectionDialog epDlg(entities, false, selectedIndex, parent, label);
+  if (!epDlg.exec()) {
+    return -1;
+  }
 
-	try
-	{
-		indexes.resize(static_cast<size_t>(list.size()));
-	}
-	catch (const std::bad_alloc&)
-	{
-		//not enough memory?!
-		return;
-	}
-	
-	for (int i=0; i<list.size(); ++i)
-	{
-		indexes[i] = m_ui->listWidget->row(list[i]);
-	}
+  return epDlg.getSelectedIndex();
 }
 
-int ccEntitySelectionDialog::SelectEntity(	const ccHObject::Container& entities,
-											int selectedIndex/*=0*/,
-											QWidget* parent/*=nullptr*/,
-											QString label/*=QString()*/)
-{
-	ccEntitySelectionDialog epDlg(entities, false, selectedIndex, parent, label);
-	if (!epDlg.exec())
-	{
-		return -1;
-	}
+bool ccEntitySelectionDialog::SelectEntities(
+    const ccHObject::Container &entities, std::vector<int> &selectedIndexes,
+    QWidget *parent /*=nullptr*/, QString label /*=QString()*/) {
+  selectedIndexes.clear();
 
-	return epDlg.getSelectedIndex();
-}
+  ccEntitySelectionDialog epDlg(entities, true, -1, parent, label);
+  if (!epDlg.exec()) {
+    return false;
+  }
 
-bool ccEntitySelectionDialog::SelectEntities(	const ccHObject::Container& entities,
-												std::vector<int>& selectedIndexes,
-												QWidget* parent/*=nullptr*/,
-												QString label/*=QString()*/)
-{
-	selectedIndexes.clear();
-
-	ccEntitySelectionDialog epDlg(entities, true, -1, parent, label);
-	if (!epDlg.exec())
-	{
-		return false;
-	}
-
-	epDlg.getSelectedIndexes(selectedIndexes);
-	return true;
+  epDlg.getSelectedIndexes(selectedIndexes);
+  return true;
 }

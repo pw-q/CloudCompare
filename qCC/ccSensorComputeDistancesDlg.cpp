@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -15,24 +15,17 @@
 //#                                                                        #
 //##########################################################################
 
-
 #include "ccSensorComputeDistancesDlg.h"
 #include "ui_sensorComputeDistancesDlg.h"
 
-
-ccSensorComputeDistancesDlg::ccSensorComputeDistancesDlg(QWidget* parent/*=nullptr*/)
-	: QDialog(parent, Qt::Tool)
-	, m_ui( new Ui::sensorComputeDistancesDlg )
-{
-	m_ui->setupUi(this);
+ccSensorComputeDistancesDlg::ccSensorComputeDistancesDlg(
+    QWidget *parent /*=nullptr*/)
+    : QDialog(parent, Qt::Tool), m_ui(new Ui::sensorComputeDistancesDlg) {
+  m_ui->setupUi(this);
 }
 
-ccSensorComputeDistancesDlg::~ccSensorComputeDistancesDlg()
-{
-	delete m_ui;
-}
+ccSensorComputeDistancesDlg::~ccSensorComputeDistancesDlg() { delete m_ui; }
 
-bool ccSensorComputeDistancesDlg::computeSquaredDistances() const
-{
-	return m_ui->checkSquaredDistance->checkState() == Qt::Checked;
+bool ccSensorComputeDistancesDlg::computeSquaredDistances() const {
+  return m_ui->checkSquaredDistance->checkState() == Qt::Checked;
 }

@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,62 +17,59 @@
 
 #include "ccOrthoSectionGenerationDlg.h"
 
-//system
+// system
 #include <cmath>
 
-ccOrthoSectionGenerationDlg::ccOrthoSectionGenerationDlg(QWidget* parent/*=nullptr*/)
-	: QDialog(parent, Qt::Tool)
-	, Ui::OrthoSectionGenerationDlg()
-	, m_pathLength(0)
-{
-	setupUi(this);
+ccOrthoSectionGenerationDlg::ccOrthoSectionGenerationDlg(
+    QWidget *parent /*=nullptr*/)
+    : QDialog(parent, Qt::Tool), Ui::OrthoSectionGenerationDlg(),
+      m_pathLength(0) {
+  setupUi(this);
 
-	connect(stepDoubleSpinBox, qOverload<double> (&QDoubleSpinBox::valueChanged), this, &ccOrthoSectionGenerationDlg::onStepChanged);
+  connect(stepDoubleSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged),
+          this, &ccOrthoSectionGenerationDlg::onStepChanged);
 }
 
-void ccOrthoSectionGenerationDlg::setPathLength(double l)
-{
-	m_pathLength = l;
-	pathLengthLineEdit->setText(QString::number(l));
-	stepDoubleSpinBox->setValue(l/9);
-	widthDoubleSpinBox->setValue(l/5);
+void ccOrthoSectionGenerationDlg::setPathLength(double l) {
+  m_pathLength = l;
+  pathLengthLineEdit->setText(QString::number(l));
+  stepDoubleSpinBox->setValue(l / 9);
+  widthDoubleSpinBox->setValue(l / 5);
 }
 
-void ccOrthoSectionGenerationDlg::setAutoSaveAndRemove(bool state)
-{
-	autoSaveAndRemoveCheckBox->setChecked(state);
+void ccOrthoSectionGenerationDlg::setAutoSaveAndRemove(bool state) {
+  autoSaveAndRemoveCheckBox->setChecked(state);
 }
 
-bool ccOrthoSectionGenerationDlg::autoSaveAndRemove() const
-{
-	return autoSaveAndRemoveCheckBox->isChecked();
+bool ccOrthoSectionGenerationDlg::autoSaveAndRemove() const {
+  return autoSaveAndRemoveCheckBox->isChecked();
 }
 
-void ccOrthoSectionGenerationDlg::setGenerationStep(double s)
-{
-	stepDoubleSpinBox->setValue(s);
+void ccOrthoSectionGenerationDlg::setGenerationStep(double s) {
+  stepDoubleSpinBox->setValue(s);
 }
 
-void ccOrthoSectionGenerationDlg::setSectionsWidth(double w)
-{
-	widthDoubleSpinBox->setValue(w);
+void ccOrthoSectionGenerationDlg::setSectionsWidth(double w) {
+  widthDoubleSpinBox->setValue(w);
 }
 
-double ccOrthoSectionGenerationDlg::getGenerationStep() const
-{
-	return stepDoubleSpinBox->value();
+double ccOrthoSectionGenerationDlg::getGenerationStep() const {
+  return stepDoubleSpinBox->value();
 }
 
-double ccOrthoSectionGenerationDlg::getSectionsWidth() const
-{
-	return widthDoubleSpinBox->value();
+double ccOrthoSectionGenerationDlg::getSectionsWidth() const {
+  return widthDoubleSpinBox->value();
 }
 
-void ccOrthoSectionGenerationDlg::onStepChanged(double step)
-{
-	if (step < 0)
-		return;
+void ccOrthoSectionGenerationDlg::onStepChanged(double step) {
+  if (step < 0)
+    return;
 
-	unsigned count = step < 1.0e-6 ? 1 : 1 + static_cast<unsigned>(m_pathLength / step); //static_cast is equivalent to floor if value >= 0
-	sectionCountLineEdit->setText(QString::number(count));
+  unsigned count =
+      step < 1.0e-6
+          ? 1
+          : 1 + static_cast<unsigned>(
+                    m_pathLength /
+                    step); // static_cast is equivalent to floor if value >= 0
+  sectionCountLineEdit->setText(QString::number(count));
 }

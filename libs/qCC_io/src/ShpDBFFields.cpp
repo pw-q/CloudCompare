@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -19,53 +19,51 @@
 
 #include "ShpDBFFields.h"
 
-//system
+// system
 #include <assert.h>
 
-bool IntegerDBFField::save(DBFHandle handle, int fieldIndex) const
-{
-	if (!handle || fieldIndex < 0)
-	{
-		assert(false);
-		return false;
-	}
+bool IntegerDBFField::save(DBFHandle handle, int fieldIndex) const {
+  if (!handle || fieldIndex < 0) {
+    assert(false);
+    return false;
+  }
 
-	for (size_t i = 0; i < values.size(); ++i)
-		DBFWriteIntegerAttribute(handle, static_cast<int>(i), fieldIndex, values[i]);
+  for (size_t i = 0; i < values.size(); ++i)
+    DBFWriteIntegerAttribute(handle, static_cast<int>(i), fieldIndex,
+                             values[i]);
 
-	return true;
+  return true;
 }
 
-bool DoubleDBFField::save(DBFHandle handle, int fieldIndex) const
-{
-	if (!handle || fieldIndex < 0)
-	{
-		assert(false);
-		return false;
-	}
+bool DoubleDBFField::save(DBFHandle handle, int fieldIndex) const {
+  if (!handle || fieldIndex < 0) {
+    assert(false);
+    return false;
+  }
 
-	for (size_t i = 0; i < values.size(); ++i)
-		DBFWriteDoubleAttribute(handle, static_cast<int>(i), fieldIndex, values[i]);
+  for (size_t i = 0; i < values.size(); ++i)
+    DBFWriteDoubleAttribute(handle, static_cast<int>(i), fieldIndex, values[i]);
 
-	return true;
+  return true;
 }
 
-bool DoubleDBFField3D::save(DBFHandle handle, int xFieldIndex, int yFieldIndex, int zFieldIndex) const
-{
-	if (!handle || xFieldIndex < 0 || yFieldIndex < 0 || zFieldIndex < 0)
-	{
-		assert(false);
-		return false;
-	}
+bool DoubleDBFField3D::save(DBFHandle handle, int xFieldIndex, int yFieldIndex,
+                            int zFieldIndex) const {
+  if (!handle || xFieldIndex < 0 || yFieldIndex < 0 || zFieldIndex < 0) {
+    assert(false);
+    return false;
+  }
 
-	for (size_t i = 0; i < values.size(); ++i)
-	{
-		DBFWriteDoubleAttribute(handle, static_cast<int>(i), xFieldIndex, values[i].x);
-		DBFWriteDoubleAttribute(handle, static_cast<int>(i), yFieldIndex, values[i].y);
-		DBFWriteDoubleAttribute(handle, static_cast<int>(i), zFieldIndex, values[i].z);
-	}
+  for (size_t i = 0; i < values.size(); ++i) {
+    DBFWriteDoubleAttribute(handle, static_cast<int>(i), xFieldIndex,
+                            values[i].x);
+    DBFWriteDoubleAttribute(handle, static_cast<int>(i), yFieldIndex,
+                            values[i].y);
+    DBFWriteDoubleAttribute(handle, static_cast<int>(i), zFieldIndex,
+                            values[i].z);
+  }
 
-	return true;
+  return true;
 }
 
-#endif //CC_SHP_SUPPORT
+#endif // CC_SHP_SUPPORT

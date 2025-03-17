@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                  CLOUDCOMPARE PLUGIN: qCSVMatrixIO                     #
+//#                  ZOOMLION PLUGIN: qCSVMatrixIO                     #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,17 +17,13 @@
 
 #include "qCSVMatrixIO.h"
 
-//local
+// local
 #include "CSVMatrixFilter.h"
 
-
 qCSVMatrixIO::qCSVMatrixIO(QObject *parent)
-	: QObject( parent )
-	, ccIOPluginInterface( ":/CC/plugin/qCSVMatrixIO/info.json" )
-{
-}
+    : QObject(parent),
+      ccIOPluginInterface(":/CC/plugin/qCSVMatrixIO/info.json") {}
 
-ccIOPluginInterface::FilterList qCSVMatrixIO::getFilters()
-{
-	return { FileIOFilter::Shared( new CSVMatrixFilter ) };
+ccIOPluginInterface::FilterList qCSVMatrixIO::getFilters() {
+  return {FileIOFilter::Shared(new CSVMatrixFilter)};
 }

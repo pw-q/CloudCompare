@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                   CLOUDCOMPARE PLUGIN: qPhotoScanIO                    #
+//#                   ZOOMLION PLUGIN: qPhotoScanIO                    #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,17 +17,13 @@
 
 #include "qPhotoscanIO.h"
 
-//local
+// local
 #include "PhotoScanFilter.h"
 
+qPhotoscanIO::qPhotoscanIO(QObject *parent)
+    : QObject(parent),
+      ccIOPluginInterface(":/CC/plugin/qPhotoscanIO/info.json") {}
 
-qPhotoscanIO::qPhotoscanIO( QObject* parent )
-	: QObject( parent )
-	, ccIOPluginInterface( ":/CC/plugin/qPhotoscanIO/info.json" )
-{
-}
-
-ccIOPluginInterface::FilterList qPhotoscanIO::getFilters()
-{
-	return { FileIOFilter::Shared( new PhotoScanFilter ) };
+ccIOPluginInterface::FilterList qPhotoscanIO::getFilters() {
+  return {FileIOFilter::Shared(new PhotoScanFilter)};
 }

@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -23,63 +23,57 @@
 **/
 static const unsigned CC_MAX_SHADER_COLOR_RAMP_SIZE = 256;
 
-//! Buffer for converting a color scale to packed values before sending it to shader
+//! Buffer for converting a color scale to packed values before sending it to
+//! shader
 static float s_packedColormapf[CC_MAX_SHADER_COLOR_RAMP_SIZE];
 
-unsigned ccColorRampShader::MaxColorRampSize()
-{
-	return CC_MAX_SHADER_COLOR_RAMP_SIZE;
+unsigned ccColorRampShader::MaxColorRampSize() {
+  return CC_MAX_SHADER_COLOR_RAMP_SIZE;
 }
 
-GLint ccColorRampShader::MinRequiredBytes()
-{
-	return (CC_MAX_SHADER_COLOR_RAMP_SIZE + 4) * 4;
+GLint ccColorRampShader::MinRequiredBytes() {
+  return (CC_MAX_SHADER_COLOR_RAMP_SIZE + 4) * 4;
 }
 
-ccColorRampShader::ccColorRampShader()
-	: ccShader()
-{
-}
+ccColorRampShader::ccColorRampShader() : ccShader() {}
 
-bool ccColorRampShader::setup(QOpenGLFunctions_2_1* glFunc, float minSatRel, float maxSatRel, unsigned colorSteps, const ccColorScale::Shared& colorScale)
-{
-	assert(glFunc);
+bool ccColorRampShader::setup(QOpenGLFunctions_2_1 *glFunc, float minSatRel,
+                              float maxSatRel, unsigned colorSteps,
+                              const ccColorScale::Shared &colorScale) {
+  assert(glFunc);
 
-	if (colorSteps > CC_MAX_SHADER_COLOR_RAMP_SIZE)
-	{
-		colorSteps = CC_MAX_SHADER_COLOR_RAMP_SIZE;
-	}
+  if (colorSteps > CC_MAX_SHADER_COLOR_RAMP_SIZE) {
+    colorSteps = CC_MAX_SHADER_COLOR_RAMP_SIZE;
+  }
 
-	setUniformValue("uf_minSaturation", minSatRel);
-	setUniformValue("uf_maxSaturation", maxSatRel);
-	setUniformValue("uf_colormapSize", static_cast<float>(colorSteps));
+  setUniformValue("uf_minSaturation", minSatRel);
+  setUniformValue("uf_maxSaturation", maxSatRel);
+  setUniformValue("uf_colormapSize", static_cast<float>(colorSteps));
 
-	static const double resolution = static_cast<double>(1 << 24);
+  static const double resolution = static_cast<double>(1 << 24);
 
-	//set 'grayed' points color as a float-packed value
-	{
-		int rgb = (ccColor::lightGrey.a << 24) | (ccColor::lightGrey.r << 16) | (ccColor::lightGrey.g << 8) | ccColor::lightGrey.b;
-		float packedColorGray = static_cast<float>(rgb / resolution);
-		setUniformValue("uf_colorGray", packedColorGray);
-	}
+  // set 'grayed' points color as a float-packed value
+  {
+    int rgb = (ccColor::lightGrey.a << 24) | (ccColor::lightGrey.r << 16) |
+              (ccColor::lightGrey.g << 8) | ccColor::lightGrey.b;
+    float packedColorGray = static_cast<float>(rgb / resolution);
+    setUniformValue("uf_colorGray", packedColorGray);
+  }
 
-	//send colormap to shader
-	assert(colorScale);
-	for (unsigned i = 0; i < colorSteps; ++i)
-	{
-		const ccColor::Rgb* col = colorScale->getColorByRelativePos(static_cast<double>(i) / (colorSteps - 1), colorSteps);
-		if (col)
-		{
-			//set ramp colors as float-packed values
-			int rgb = (col->r << 16) | (col->g << 8) | col->b;
-			s_packedColormapf[i] = static_cast<float>(rgb / resolution);
-		}
-		else
-		{
-			assert(false);
-		}
-	}
-	setUniformValueArray("uf_colormapTable", s_packedColormapf, colorSteps, 1);
+  // send colormap to shader
+  assert(colorScale);
+  for (unsigned i = 0; i < colorSteps; ++i) {
+    const ccColor::Rgb *col = colorScale->getColorByRelativePos(
+        static_cast<double>(i) / (colorSteps - 1), colorSteps);
+    if (col) {
+      // set ramp colors as float-packed values
+      int rgb = (col->r << 16) | (col->g << 8) | col->b;
+      s_packedColormapf[i] = static_cast<float>(rgb / resolution);
+    } else {
+      assert(false);
+    }
+  }
+  setUniformValueArray("uf_colormapTable", s_packedColormapf, colorSteps, 1);
 
-	return (glFunc->glGetError() == 0);
+  return (glFunc->glGetError() == 0);
 }

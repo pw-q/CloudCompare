@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,42 +17,35 @@
 
 #include "ccPickOneElementDlg.h"
 
-//UI file
+// UI file
 #include <ui_pickOneElementDlg.h>
 
-ccPickOneElementDlg::ccPickOneElementDlg(	const QString &label,
-											const QString &windowTitle/*=QString()*/,
-											QWidget* parent/*=nullptr*/)
-	: QDialog(parent, Qt::Tool)
-	, m_ui(new Ui_PickOneElementDialog)
-{
-	m_ui->setupUi(this);
+ccPickOneElementDlg::ccPickOneElementDlg(
+    const QString &label, const QString &windowTitle /*=QString()*/,
+    QWidget *parent /*=nullptr*/)
+    : QDialog(parent, Qt::Tool), m_ui(new Ui_PickOneElementDialog) {
+  m_ui->setupUi(this);
 
-	if (!windowTitle.isNull())
-	{
-		setWindowTitle(windowTitle);
-	}
+  if (!windowTitle.isNull()) {
+    setWindowTitle(windowTitle);
+  }
 
-	m_ui->comboLabel->setText(label);
+  m_ui->comboLabel->setText(label);
 }
 
-ccPickOneElementDlg::~ccPickOneElementDlg()
-{
-	delete m_ui;
-	m_ui = nullptr;
+ccPickOneElementDlg::~ccPickOneElementDlg() {
+  delete m_ui;
+  m_ui = nullptr;
 }
 
-void ccPickOneElementDlg::addElement(const QString &elementName)
-{
-	m_ui->comboBox->addItem(elementName);
+void ccPickOneElementDlg::addElement(const QString &elementName) {
+  m_ui->comboBox->addItem(elementName);
 }
 
-void ccPickOneElementDlg::setDefaultIndex(int index)
-{
-	m_ui->comboBox->setCurrentIndex(index);
+void ccPickOneElementDlg::setDefaultIndex(int index) {
+  m_ui->comboBox->setCurrentIndex(index);
 }
 
-int ccPickOneElementDlg::getSelectedIndex()
-{
-	return m_ui->comboBox->currentIndex();
+int ccPickOneElementDlg::getSelectedIndex() {
+  return m_ui->comboBox->currentIndex();
 }

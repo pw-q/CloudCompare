@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,10 +17,10 @@
 
 #include "ccLog.h"
 
-//CCCoreLib
+// CCCoreLib
 #include <CCPlatform.h>
 
-//System
+// System
 #include <cassert>
 #include <vector>
 
@@ -32,213 +32,172 @@
  *** Globals ***
  ***************/
 
-//buffer for formatted string generation
+// buffer for formatted string generation
 static const size_t s_bufferMaxSize = 4096;
 static char s_buffer[s_bufferMaxSize];
 
 //! Message
-struct Message
-{
-	Message(const QString& t, int f)
-		: text(t)
-		, flags(f)
-	{}
+struct Message {
+  Message(const QString &t, int f) : text(t), flags(f) {}
 
-	QString text;
-	int flags;
+  QString text;
+  int flags;
 };
 
-//message backup system
+// message backup system
 static bool s_backupEnabled;
 
-//message verbosity level
+// message verbosity level
 #ifdef QT_DEBUG
 static int s_verbosityLevel = ccLog::LOG_VERBOSE;
 #else
 static int s_verbosityLevel = ccLog::LOG_STANDARD;
 #endif
 
-//backed up messages
+// backed up messages
 static std::vector<Message> s_backupMessages;
 
-//unique console instance
-static ccLog* s_instance = nullptr;
+// unique console instance
+static ccLog *s_instance = nullptr;
 
-ccLog* ccLog::TheInstance()
-{
-	return s_instance;
+ccLog *ccLog::TheInstance() { return s_instance; }
+
+void ccLog::EnableMessageBackup(bool state) { s_backupEnabled = state; }
+
+int ccLog::VerbosityLevel() { return s_verbosityLevel; }
+
+void ccLog::SetVerbosityLevel(int level) {
+  s_verbosityLevel = std::min(
+      level, static_cast<int>(LOG_ERROR)); // can't ignore error messages
 }
 
-void ccLog::EnableMessageBackup(bool state)
-{
-	s_backupEnabled = state;
+void ccLog::LogMessage(const QString &message, int level) {
+  // skip messages below the current 'verbosity' level
+  if ((level & 7) < s_verbosityLevel) {
+    return;
+  }
+
+  if (s_instance) {
+    s_instance->logMessage(message, level);
+  } else if (s_backupEnabled) {
+    try {
+      s_backupMessages.emplace_back(message, level);
+    } catch (const std::bad_alloc &) {
+      // nothing to do, the message will be lost...
+    }
+  }
 }
 
-int ccLog::VerbosityLevel()
-{
-	return s_verbosityLevel;
+void ccLog::RegisterInstance(ccLog *logInstance) {
+  s_instance = logInstance;
+  if (s_instance) {
+    // if we have a valid instance, we can now flush the backed up messages
+    for (const Message &message : s_backupMessages) {
+      s_instance->logMessage(message.text, message.flags);
+    }
+    s_backupMessages.clear();
+  }
 }
 
-void ccLog::SetVerbosityLevel(int level)
-{
-	s_verbosityLevel = std::min(level, static_cast<int>(LOG_ERROR)); // can't ignore error messages
-}
-
-void ccLog::LogMessage(const QString& message, int level)
-{
-	//skip messages below the current 'verbosity' level
-	if ((level & 7) < s_verbosityLevel)
-	{
-		return;
-	}
-
-	if (s_instance)
-	{
-		s_instance->logMessage(message, level);
-	}
-	else if (s_backupEnabled)
-	{
-		try
-		{
-			s_backupMessages.emplace_back(message, level);
-		}
-		catch (const std::bad_alloc&)
-		{
-			//nothing to do, the message will be lost...
-		}
-	}
-}
-
-void ccLog::RegisterInstance(ccLog* logInstance)
-{
-	s_instance = logInstance;
-	if (s_instance)
-	{
-		//if we have a valid instance, we can now flush the backed up messages
-		for (const Message& message : s_backupMessages)
-		{
-			s_instance->logMessage(message.text, message.flags);
-		}
-		s_backupMessages.clear();
-	}
-}
-
-//Conversion from '...' parameters to QString so as to call ccLog::logMessage
+// Conversion from '...' parameters to QString so as to call ccLog::logMessage
 //(we get the "..." parameters as "printf" would do)
-#define LOG_ARGS(flags)\
-	if (s_instance || s_backupEnabled)\
-	{\
-		va_list args;\
-		va_start(args, format);\
-		_vsnprintf(s_buffer, s_bufferMaxSize, format, args);\
-		va_end(args);\
-		LogMessage(QString(s_buffer), flags);\
-	}\
+#define LOG_ARGS(flags)                                                        \
+  if (s_instance || s_backupEnabled) {                                         \
+    va_list args;                                                              \
+    va_start(args, format);                                                    \
+    _vsnprintf(s_buffer, s_bufferMaxSize, format, args);                       \
+    va_end(args);                                                              \
+    LogMessage(QString(s_buffer), flags);                                      \
+  }
 
-bool ccLog::PrintVerbose(const char* format, ...)
-{
-	LOG_ARGS(LOG_VERBOSE)
-	return true;
+bool ccLog::PrintVerbose(const char *format, ...) {
+  LOG_ARGS(LOG_VERBOSE)
+  return true;
 }
 
-bool ccLog::PrintVerbose(const QString& message)
-{
-	LogMessage(message, LOG_VERBOSE);
-	return true;
+bool ccLog::PrintVerbose(const QString &message) {
+  LogMessage(message, LOG_VERBOSE);
+  return true;
 }
 
-bool ccLog::Print(const char* format, ...)
-{
-	LOG_ARGS(LOG_STANDARD)
-	return true;
+bool ccLog::Print(const char *format, ...) {
+  LOG_ARGS(LOG_STANDARD)
+  return true;
 }
 
-bool ccLog::Print(const QString& message)
-{
-	LogMessage(message, LOG_STANDARD);
-	return true;
+bool ccLog::Print(const QString &message) {
+  LogMessage(message, LOG_STANDARD);
+  return true;
 }
 
-bool ccLog::PrintHigh(const char* format, ...)
-{
-	LOG_ARGS(LOG_IMPORTANT)
-	return true;
+bool ccLog::PrintHigh(const char *format, ...) {
+  LOG_ARGS(LOG_IMPORTANT)
+  return true;
 }
 
-bool ccLog::PrintHigh(const QString& message)
-{
-	LogMessage(message, LOG_IMPORTANT);
-	return true;
+bool ccLog::PrintHigh(const QString &message) {
+  LogMessage(message, LOG_IMPORTANT);
+  return true;
 }
 
-bool ccLog::Warning(const char* format, ...)
-{
-	LOG_ARGS(LOG_WARNING)
-	return false;
+bool ccLog::Warning(const char *format, ...) {
+  LOG_ARGS(LOG_WARNING)
+  return false;
 }
 
-bool ccLog::Warning(const QString& message)
-{
-	LogMessage(message, LOG_WARNING);
-	return false;
+bool ccLog::Warning(const QString &message) {
+  LogMessage(message, LOG_WARNING);
+  return false;
 }
 
-bool ccLog::Error(const char* format, ...)
-{
-	LOG_ARGS(LOG_ERROR)
-	return false;
+bool ccLog::Error(const char *format, ...) {
+  LOG_ARGS(LOG_ERROR)
+  return false;
 }
 
-bool ccLog::Error(const QString& message)
-{
-	LogMessage(message, LOG_ERROR);
-	return false;
+bool ccLog::Error(const QString &message) {
+  LogMessage(message, LOG_ERROR);
+  return false;
 }
 
-bool ccLog::PrintDebug(const char* format, ...)
-{
+bool ccLog::PrintDebug(const char *format, ...) {
 #ifdef QT_DEBUG
-	LOG_ARGS(LOG_STANDARD | DEBUG_FLAG)
+  LOG_ARGS(LOG_STANDARD | DEBUG_FLAG)
 #endif
-	return false;
+  return false;
 }
 
-bool ccLog::PrintDebug(const QString& message)
-{
+bool ccLog::PrintDebug(const QString &message) {
 #ifdef QT_DEBUG
-	LogMessage(message, LOG_STANDARD | DEBUG_FLAG);
+  LogMessage(message, LOG_STANDARD | DEBUG_FLAG);
 #endif
-	return false;
+  return false;
 }
 
-bool ccLog::WarningDebug(const char* format, ...)
-{
+bool ccLog::WarningDebug(const char *format, ...) {
 #ifdef QT_DEBUG
-	LOG_ARGS(LOG_WARNING)
+  LOG_ARGS(LOG_WARNING)
 #endif
-	return false;
+  return false;
 }
 
-bool ccLog::WarningDebug(const QString& message)
-{
+bool ccLog::WarningDebug(const QString &message) {
 #ifdef QT_DEBUG
-	LogMessage(message, LOG_WARNING | DEBUG_FLAG);
+  LogMessage(message, LOG_WARNING | DEBUG_FLAG);
 #endif
-	return false;
+  return false;
 }
 
-bool ccLog::ErrorDebug(const char* format, ...)
-{
+bool ccLog::ErrorDebug(const char *format, ...) {
 #ifdef QT_DEBUG
-	LOG_ARGS(LOG_ERROR)
+  LOG_ARGS(LOG_ERROR)
 #endif
-	return false;
+  return false;
 }
 
-bool ccLog::ErrorDebug(const QString& message)
-{
+bool ccLog::ErrorDebug(const QString &message) {
 #ifdef QT_DEBUG
-	LogMessage(message, LOG_ERROR | DEBUG_FLAG);
+  LogMessage(message, LOG_ERROR | DEBUG_FLAG);
 #endif
-	return false;
+  return false;
 }

@@ -1,6 +1,6 @@
 //##########################################################################
 //#                                                                        #
-//#                              CLOUDCOMPARE                              #
+//#                              ZOOMLION                              #
 //#                                                                        #
 //#  This program is free software; you can redistribute it and/or modify  #
 //#  it under the terms of the GNU General Public License as published by  #
@@ -17,10 +17,10 @@
 
 #include "ccScalarFieldFromColorDlg.h"
 
-//Qt
+// Qt
 #include <QPushButton>
 
-//qCC_db
+// qCC_db
 #include <ccPointCloud.h>
 
 #include <assert.h>
@@ -28,34 +28,28 @@
 #include <windows.h>
 #endif
 
-ccScalarFieldFromColorDlg::ccScalarFieldFromColorDlg(QWidget* parent/*=nullptr*/)
-	: QDialog(parent, Qt::Tool)
-	, Ui::scalarFieldFromColorDlg()
-{
-	setupUi(this);
+ccScalarFieldFromColorDlg::ccScalarFieldFromColorDlg(
+    QWidget *parent /*=nullptr*/)
+    : QDialog(parent, Qt::Tool), Ui::scalarFieldFromColorDlg() {
+  setupUi(this);
 }
 
-bool ccScalarFieldFromColorDlg::getRStatus() const
-{
-	return this->checkBoxR->isChecked();
+bool ccScalarFieldFromColorDlg::getRStatus() const {
+  return this->checkBoxR->isChecked();
 }
 
-bool ccScalarFieldFromColorDlg::getGStatus() const
-{
-	return this->checkBoxG->isChecked();
+bool ccScalarFieldFromColorDlg::getGStatus() const {
+  return this->checkBoxG->isChecked();
 }
 
-bool ccScalarFieldFromColorDlg::getBStatus() const
-{
-	return this->checkBoxB->isChecked();
+bool ccScalarFieldFromColorDlg::getBStatus() const {
+  return this->checkBoxB->isChecked();
 }
 
-bool ccScalarFieldFromColorDlg::getAlphaStatus() const
-{
-	return this->checkBoxA->isChecked();
+bool ccScalarFieldFromColorDlg::getAlphaStatus() const {
+  return this->checkBoxA->isChecked();
 }
 
-bool ccScalarFieldFromColorDlg::getCompositeStatus() const
-{
-	return this->checkBoxComposite->isChecked();
+bool ccScalarFieldFromColorDlg::getCompositeStatus() const {
+  return this->checkBoxComposite->isChecked();
 }
