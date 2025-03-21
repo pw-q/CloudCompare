@@ -526,6 +526,7 @@
     <addaction name="menuOther"/>
     <addaction name="menuTrace"/>
     <addaction name="separator"/>
+    <addaction name="actionTerrainModel"/>
     <addaction name="actionLevel"/>
     <addaction name="actionPointPicking"/>
     <addaction name="actionPointListPicking"/>
@@ -3218,6 +3219,21 @@ The active scalar field should have integer values.</string>
   <action name="actionPolygonMesh">
    <property name="text">
     <string>Trace PolygonMesh</string>
+   </property>
+  </action>
+  <action name="actionDEM">
+   <property name="text">
+    <string>DEM</string>
+   </property>
+  </action>
+  <action name="actionOrthophoto">
+   <property name="text">
+    <string>正射影像</string>
+   </property>
+  </action>
+  <action name="actionTerrainModel">
+   <property name="text">
+    <string>地形模型生成</string>
    </property>
   </action>
  </widget>

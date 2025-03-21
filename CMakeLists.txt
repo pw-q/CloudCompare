@@ -17,6 +17,7 @@ include( CMakePolicies )
 include( CMakeSetCompilerOptions )
 include( DeployQt )
 
+
 # CCViewer
 option( OPTION_BUILD_CCVIEWER "Check to compile CCViewer project" ON )
 

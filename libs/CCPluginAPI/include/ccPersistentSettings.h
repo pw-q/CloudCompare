@@ -38,6 +38,7 @@ namespace ccPS
 	inline const QString DuplicatePointsMinDist      () { return QStringLiteral( "minDist" ); }
 	inline const QString HeightGridGeneration        () { return QStringLiteral( "HeightGridGeneration" ); }
 	inline const QString VolumeCalculation           () { return QStringLiteral( "VolumeCalculation" ); }
+	inline const QString TerrainModel           	   () { return QStringLiteral( "TerrainModel" ); }
 	inline const QString Console                     () { return QStringLiteral( "Console" ); }
 	inline const QString GlobalShift                 () { return QStringLiteral( "GlobalShift" ); }
 	inline const QString MaxAbsCoord                 () { return QStringLiteral( "MaxAbsCoord" ); }

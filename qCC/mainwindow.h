@@ -393,6 +393,7 @@ private:
   void doActionSetSFsAsNormal();
   void doComputeBestFitBB();
   void doActionCrop();
+  void doActionGenerateTerrainModel();
 
   void doActionEditCamera();
   void doActionAdjustZoom();

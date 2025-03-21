@@ -116,6 +116,7 @@
 #include "ccSensorComputeScatteringAnglesDlg.h"
 #include "ccSmoothPolylineDlg.h"
 #include "ccSubsamplingDlg.h"
+#include "ccTerrainModel.h"
 #include "ccTracePolylineTool.h"
 #include "ccTranslationManager.h"
 #include "ccUnrollDlg.h"
@@ -863,6 +864,9 @@ void MainWindow::connectActions() {
           &MainWindow::doActionCreateCloudFromEntCenters);
   connect(m_UI->actionComputeBestICPRmsMatrix, &QAction::triggered, this,
           &MainWindow::doActionComputeBestICPRmsMatrix);
+
+  connect(m_UI->actionTerrainModel, &QAction::triggered, this,
+          &MainWindow::doActionGenerateTerrainModel);
 
   //"Display" menu
   connect(m_UI->actionFullScreen, &QAction::toggled, this,
@@ -4838,6 +4842,45 @@ void MainWindow::doCompute2HalfDimVolume() {
   ccVolumeCalcTool *calcVolumeTool =
       new ccVolumeCalcTool(cloud1, cloud2, edge, this);
   calcVolumeTool->show();
+}
+
+void MainWindow::doActionGenerateTerrainModel() {
+  if (m_selectedEntities.empty() || m_selectedEntities.size() > 2) {
+    ccConsole::Error(tr("请选择1个点云以及0-1个多边形!"));
+    return;
+  }
+
+  ccPolyline *edge = nullptr;
+
+  ccGenericPointCloud *cloud = nullptr;
+  {
+    ccHObject *ent = m_selectedEntities.front();
+    if (ent->isKindOf(CC_TYPES::POINT_CLOUD)) {
+      cloud = ccHObjectCaster::ToGenericPointCloud(ent);
+    } else if (ent->isKindOf(CC_TYPES::POLY_LINE)) {
+      edge = ccHObjectCaster::ToPolyline(ent);
+    }
+  }
+
+  if (m_selectedEntities.size() > 1) {
+    ccHObject *ent = m_selectedEntities[1];
+    if (ent->isKindOf(CC_TYPES::POINT_CLOUD)) {
+      if (cloud == nullptr) {
+        cloud = ccHObjectCaster::ToGenericPointCloud(ent);
+      }
+    } else if (ent->isKindOf(CC_TYPES::POLY_LINE) && edge == nullptr) {
+      edge = ccHObjectCaster::ToPolyline(ent);
+    }
+  }
+
+  if (cloud == nullptr) {
+    ccConsole::Error(tr("请选择一个点云!"));
+    return;
+  }
+
+  ccTerrainModelTool *terrainModelTool =
+      new ccTerrainModelTool(cloud, edge, this);
+  terrainModelTool->show();
 }
 
 void MainWindow::doActionRasterize() {
@@ -10888,6 +10931,8 @@ void MainWindow::enableUIItems(dbTreeSelectionInfo &selInfo) {
         selInfo.polylineCount == 1)) &&
       selInfo.cloudCount >= 1 && selInfo.cloudCount <= 2); // one or two clouds!
 
+  m_UI->actionTerrainModel->setEnabled(selInfo.cloudCount == 1 &&
+                                       (selInfo.polylineCount <= 1));
   m_UI->actionPointListPicking->setEnabled(exactlyOneCloud || exactlyOneMesh);
 
   // == 2
